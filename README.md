@@ -82,9 +82,9 @@ pytest
 - [x] Pair linker (temporal association)
 - [x] Pattern aggregator
 - [x] Adjustment engine
-- [ ] Pose estimation pipeline
-- [ ] Action classifier model
-- [ ] Fighter tracking
+- [x] Pose estimation pipeline
+- [x] Action classifier model
+- [x] Fighter tracking
 - [ ] Corner coach UI
 - [ ] Real-time video processing
 
