@@ -62,17 +62,24 @@ def _distance(a: tuple[float, float], b: tuple[float, float]) -> float:
 def _velocity(
     poses: list[PoseResult],
     landmark_idx: int,
+    trailing_frames: int = 4,
 ) -> tuple[float, float]:
-    """Compute average velocity of a landmark across a pose window.
+    """Compute average velocity of a landmark over the trailing frames.
+
+    Uses only the last ``trailing_frames`` poses to avoid dilution
+    from idle frames at the start of the window.
 
     Returns (vx, vy) in pixels per second.
     """
     if len(poses) < 2:
         return (0.0, 0.0)
 
-    first = poses[0].get_point_2d(landmark_idx)
-    last = poses[-1].get_point_2d(landmark_idx)
-    dt = poses[-1].timestamp_s - poses[0].timestamp_s
+    # Use only the trailing segment
+    segment = poses[-trailing_frames:] if len(poses) >= trailing_frames else poses
+
+    first = segment[0].get_point_2d(landmark_idx)
+    last = segment[-1].get_point_2d(landmark_idx)
+    dt = last_ts = segment[-1].timestamp_s - segment[0].timestamp_s
 
     if dt < 1e-6:
         return (0.0, 0.0)
@@ -124,9 +131,9 @@ class RuleBasedClassifier:
     """
 
     # Velocity thresholds (normalized by body height per second)
-    FAST_HAND_VELOCITY = 2.0      # Striking speed
-    FAST_FOOT_VELOCITY = 1.5      # Kicking speed
-    LEVEL_CHANGE_THRESHOLD = 0.15  # Hip drop as fraction of body height
+    FAST_HAND_VELOCITY = 1.5      # Striking speed
+    FAST_FOOT_VELOCITY = 1.2      # Kicking speed
+    LEVEL_CHANGE_THRESHOLD = 0.12  # Hip drop as fraction of body height
 
     def classify(
         self, window: list[PoseResult]
