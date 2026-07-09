@@ -1,0 +1,863 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "description": "MMA counter pair database: maps (your_action → opponent_counter → outcome) with suggested technical adjustments",
+    "severity_levels": ["critical", "high", "moderate", "low"],
+    "notes": "Each entry represents a common pattern where an attack is consistently countered. Adjustments are ordered by recommended priority."
+  },
+
+  "counter_pairs": [
+
+    {
+      "id": "cp_001",
+      "domain": "striking",
+      "your_action": "jab_head",
+      "opponent_counter": {
+        "defense": "slip_outside",
+        "attack": "cross_head",
+        "name": "Slip Outside + Cross"
+      },
+      "why_it_works": "Jabbing on a straight line with no head movement allows opponent to read the jab, slip to the outside (away from the rear hand), and land a cross over the top while you're extended.",
+      "severity": "critical",
+      "frequency_in_mma": "very_high",
+      "notable_examples": ["Canelo vs. anyone", "McGregor counter left", "Petr Yan"],
+      "adjustments": [
+        {
+          "priority": 1,
+          "name": "Exit off the centerline",
+          "description": "After jabbing, step to your lead-hand side (outside angle) instead of returning straight back. This takes you off the line of the counter cross.",
+          "technical_detail": "Jab, then pivot on lead foot ~15-30° to the left (orthodox). Your head is no longer where the cross is aimed.",
+          "risk": "low",
+          "implementation_difficulty": "medium"
+        },
+        {
+          "priority": 2,
+          "name": "Double jab with level change",
+          "description": "Throw a second jab aimed at the body immediately after the head jab. This drops your level below the counter cross line.",
+          "technical_detail": "1-1body. The level change on the second jab makes you a moving target and loads the rear hand for a follow-up.",
+          "risk": "low",
+          "implementation_difficulty": "low"
+        },
+        {
+          "priority": 3,
+          "name": "Jab with a built-in pull",
+          "description": "Throw the jab with slight rearward weight shift, keeping the ability to pull back immediately. Sacrifices some range but eliminates the counter window.",
+          "technical_detail": "Flicker jab / pull jab. Weight stays 55-60% on rear foot. Shorter range but faster recovery.",
+          "risk": "low",
+          "implementation_difficulty": "low"
+        },
+        {
+          "priority": 4,
+          "name": "Feint jab, counter their counter",
+          "description": "Show the jab without fully committing. When they slip and throw the cross, counter with a lead hook or pull counter.",
+          "technical_detail": "Feint jab → pull → rear uppercut or lead hook as their cross misses. Requires timing.",
+          "risk": "medium",
+          "implementation_difficulty": "high"
+        }
+      ]
+    },
+
+    {
+      "id": "cp_002",
+      "domain": "striking",
+      "your_action": "jab_head",
+      "opponent_counter": {
+        "defense": "parry",
+        "attack": "cross_head",
+        "name": "Parry + Cross"
+      },
+      "why_it_works": "Opponent reads the jab timing, parries it down or to the side with their rear hand, and immediately fires the cross through the opening created by the parry.",
+      "severity": "high",
+      "frequency_in_mma": "high",
+      "notable_examples": ["Holloway parry game", "Wonderboy"],
+      "adjustments": [
+        {
+          "priority": 1,
+          "name": "Vary jab timing and rhythm",
+          "description": "Stop jabbing at predictable intervals. Mix up single, double, and triple jabs with pauses. Make the parry timing unreliable.",
+          "technical_detail": "Rhythmic variation: jab…jab-jab…pause…jab. Broken rhythm defeats parry timing.",
+          "risk": "low",
+          "implementation_difficulty": "medium"
+        },
+        {
+          "priority": 2,
+          "name": "Jab to the body",
+          "description": "Target the body instead of the head. A body jab is harder to parry and changes the opponent's defensive pattern.",
+          "technical_detail": "Body jab slips under the parry hand. Forces opponent to change guard, opening head shots.",
+          "risk": "low",
+          "implementation_difficulty": "low"
+        },
+        {
+          "priority": 3,
+          "name": "Jab and immediately shift stance",
+          "description": "Throw the jab and shift to southpaw or take an outside angle. The cross aimed at your original position misses.",
+          "technical_detail": "Jab → stance switch or pivot. Creates angle while they commit to the counter line.",
+          "risk": "medium",
+          "implementation_difficulty": "high"
+        }
+      ]
+    },
+
+    {
+      "id": "cp_003",
+      "domain": "striking",
+      "your_action": "cross_head",
+      "opponent_counter": {
+        "defense": "slip_inside",
+        "attack": "lead_hook_head",
+        "name": "Slip Inside + Lead Hook"
+      },
+      "why_it_works": "The cross travels in a straight line. Slipping inside takes opponent's head off the line while loading their lead hook, which lands on your exposed chin as your rear hand is extended.",
+      "severity": "critical",
+      "frequency_in_mma": "very_high",
+      "notable_examples": ["Tyson slip-and-hook", "Cody Garbrandt"],
+      "adjustments": [
+        {
+          "priority": 1,
+          "name": "Bring the hand back to guard immediately",
+          "description": "Don't let the cross hang out. Snap it back to your chin the instant it lands or misses. Keep your chin tucked behind your shoulder.",
+          "technical_detail": "Shoulder roll on the cross. Rear shoulder protects chin during extension, hand snaps back.",
+          "risk": "low",
+          "implementation_difficulty": "low"
+        },
+        {
+          "priority": 2,
+          "name": "Follow the cross with a lead hook",
+          "description": "Immediately follow your cross with your own lead hook. Even if they slip inside, your hook is already coming. This turns their counter into a trade.",
+          "technical_detail": "1-2-3 combination. The lead hook (3) catches them as they come inside to counter.",
+          "risk": "medium",
+          "implementation_difficulty": "medium"
+        },
+        {
+          "priority": 3,
+          "name": "Step to the outside with the cross",
+          "description": "Step your lead foot to the outside as you throw the cross. This changes the angle so their slip goes the wrong direction.",
+          "technical_detail": "Cross with outside step. You end up at an angle where their hook can't reach you.",
+          "risk": "low",
+          "implementation_difficulty": "high"
+        }
+      ]
+    },
+
+    {
+      "id": "cp_004",
+      "domain": "striking",
+      "your_action": "overhand_right",
+      "opponent_counter": {
+        "defense": "pull_back",
+        "attack": "cross_head",
+        "name": "Lean Back + Pull Counter"
+      },
+      "why_it_works": "The overhand is a wide, telegraphed punch that requires significant forward commitment. Leaning back makes it miss entirely, and the forward momentum leaves you out of position as the counter straight arrives.",
+      "severity": "critical",
+      "frequency_in_mma": "high",
+      "notable_examples": ["McGregor pull counter vs. Aldo", "Whittaker pull counter"],
+      "adjustments": [
+        {
+          "priority": 1,
+          "name": "Set up with a jab first",
+          "description": "Never throw a naked overhand. The jab obscures the overhand's telegraph and closes distance before the big shot.",
+          "technical_detail": "1-overhand. Jab occupies their vision, closes distance, and makes the pull-back riskier.",
+          "risk": "low",
+          "implementation_difficulty": "low"
+        },
+        {
+          "priority": 2,
+          "name": "Level change into the overhand",
+          "description": "Dip your level as you throw, making the overhand come from a lower angle. This makes pull-back less effective and loads a takedown threat.",
+          "technical_detail": "Drop level → overhand. Opponent must respect the takedown, limiting their pull-back.",
+          "risk": "medium",
+          "implementation_difficulty": "medium"
+        },
+        {
+          "priority": 3,
+          "name": "Overhand to body lock",
+          "description": "If the overhand misses, continue forward into a clinch or body lock instead of trying to recover to range. This nullifies the pull counter.",
+          "technical_detail": "Overhand → crash into clinch. Even if the punch misses, you're in control position.",
+          "risk": "medium",
+          "implementation_difficulty": "medium"
+        }
+      ]
+    },
+
+    {
+      "id": "cp_005",
+      "domain": "striking",
+      "your_action": "lead_hook_head",
+      "opponent_counter": {
+        "defense": "roll_under",
+        "attack": "rear_uppercut",
+        "name": "Roll Under + Rear Uppercut"
+      },
+      "why_it_works": "The hook travels on a horizontal arc. Rolling under it puts opponent in a loaded position for an uppercut that meets you as your hook misses and your momentum carries you into it.",
+      "severity": "high",
+      "frequency_in_mma": "moderate",
+      "notable_examples": ["Canelo roll-and-uppercut", "Garbrandt vs. Cruz"],
+      "adjustments": [
+        {
+          "priority": 1,
+          "name": "Hook to the body instead",
+          "description": "Target the body with the hook. A body hook connects even if they roll under, since they're rolling INTO the body shot.",
+          "technical_detail": "Lead hook body. If they roll under expecting a head hook, the body hook meets them at bottom of the roll.",
+          "risk": "low",
+          "implementation_difficulty": "low"
+        },
+        {
+          "priority": 2,
+          "name": "Follow hook with a rear uppercut of your own",
+          "description": "Throw the hook and immediately follow with a rear uppercut. If they roll under the hook, they roll into your uppercut.",
+          "technical_detail": "3-6 combination (lead hook → rear uppercut). The uppercut catches the roll.",
+          "risk": "medium",
+          "implementation_difficulty": "medium"
+        },
+        {
+          "priority": 3,
+          "name": "Shorten the hook and stay compact",
+          "description": "Don't throw wide, looping hooks. Keep the elbow tight, reduce the arc, and maintain defensive posture throughout.",
+          "technical_detail": "Tight hook (check hook style). Less power but faster recovery and harder to roll under.",
+          "risk": "low",
+          "implementation_difficulty": "medium"
+        }
+      ]
+    },
+
+    {
+      "id": "cp_006",
+      "domain": "kicking",
+      "your_action": "rear_leg_kick",
+      "opponent_counter": {
+        "defense": "check_kick",
+        "attack": "cross_head",
+        "name": "Check + Cross"
+      },
+      "why_it_works": "When you throw a low kick, your hands drop and your head is momentarily exposed. If opponent checks the kick (blocking with their shin), they're balanced and can immediately fire a cross at your unprotected head.",
+      "severity": "critical",
+      "frequency_in_mma": "very_high",
+      "notable_examples": ["Gaethje checking kicks and countering", "Barboza counters"],
+      "adjustments": [
+        {
+          "priority": 1,
+          "name": "Keep your lead hand high while kicking",
+          "description": "Consciously maintain your lead hand guard while throwing the kick. The most common error is dropping the left hand to generate torque.",
+          "technical_detail": "Lead hand stays glued to the temple during the kick. Sacrifice some power for safety.",
+          "risk": "low",
+          "implementation_difficulty": "medium"
+        },
+        {
+          "priority": 2,
+          "name": "Kick from further out",
+          "description": "Throw the kick from the edge of range so the cross can't reach you even if they check. Forces them to step forward to counter, buying you recovery time.",
+          "technical_detail": "Long-range kick using full hip rotation. You're out of their boxing range.",
+          "risk": "low",
+          "implementation_difficulty": "medium"
+        },
+        {
+          "priority": 3,
+          "name": "Follow the kick with immediate punches",
+          "description": "Throw the kick and immediately rip a 1-2 combination. The returning kick foot loads the cross, and you beat their counter timing.",
+          "technical_detail": "Kick → 1-2. Use the kick's rotation to load the next punch. Makes them defensive rather than offensive.",
+          "risk": "medium",
+          "implementation_difficulty": "medium"
+        },
+        {
+          "priority": 4,
+          "name": "Switch to calf kicks or inside leg kicks",
+          "description": "Calf kicks and inside leg kicks are faster, lower commitment, and harder to check cleanly. Less counter window.",
+          "technical_detail": "Target the calf or inside thigh. Faster execution = smaller counter window.",
+          "risk": "low",
+          "implementation_difficulty": "low"
+        }
+      ]
+    },
+
+    {
+      "id": "cp_007",
+      "domain": "kicking",
+      "your_action": "rear_body_kick",
+      "opponent_counter": {
+        "defense": "catch_kick",
+        "attack": "sweep",
+        "name": "Catch Kick + Sweep / Takedown"
+      },
+      "why_it_works": "A body kick can be caught under the arm. Once caught, you're on one leg. Opponent sweeps the standing leg or drives forward for a takedown.",
+      "severity": "high",
+      "frequency_in_mma": "moderate",
+      "notable_examples": ["Anderson Silva catch and sweep", "Aldo kick catches"],
+      "adjustments": [
+        {
+          "priority": 1,
+          "name": "Turn the kick over sharply",
+          "description": "Fully rotate the hip so the kick cuts through the target instead of pushing. A fully turned kick is much harder to catch.",
+          "technical_detail": "Full hip turnover. The shin cuts through rather than lodging in the arm.",
+          "risk": "low",
+          "implementation_difficulty": "medium"
+        },
+        {
+          "priority": 2,
+          "name": "Immediately retract the kick",
+          "description": "Don't leave the leg out there. Snap it back the instant it lands. Speed of retraction is more important than power.",
+          "technical_detail": "Snapping retraction. Think 'touch and go' rather than kicking through.",
+          "risk": "low",
+          "implementation_difficulty": "medium"
+        },
+        {
+          "priority": 3,
+          "name": "Follow with a spinning technique",
+          "description": "If the kick is caught, immediately spin into a spinning back fist or elbow. Uses the catch as a pivot point.",
+          "technical_detail": "Caught kick → spin through into back elbow. Turns the catch into an offensive opportunity.",
+          "risk": "high",
+          "implementation_difficulty": "very_high"
+        },
+        {
+          "priority": 4,
+          "name": "Push off with the caught leg",
+          "description": "If caught, push off their body with the caught leg to create space and hop back to distance.",
+          "technical_detail": "Extend the caught leg to push away. Better than trying to pull the leg out.",
+          "risk": "medium",
+          "implementation_difficulty": "medium"
+        }
+      ]
+    },
+
+    {
+      "id": "cp_008",
+      "domain": "kicking",
+      "your_action": "rear_head_kick",
+      "opponent_counter": {
+        "defense": "duck_under",
+        "attack": "double_leg",
+        "name": "Duck Under Head Kick + Double Leg"
+      },
+      "why_it_works": "Head kicks are high commitment and slow. Ducking under puts opponent in perfect double-leg position while you're on one leg and completely off-balance.",
+      "severity": "critical",
+      "frequency_in_mma": "moderate",
+      "notable_examples": ["Wrestlers ducking kicks throughout UFC history"],
+      "adjustments": [
+        {
+          "priority": 1,
+          "name": "Set up with hands first",
+          "description": "Never throw a naked head kick against a wrestler. Use a 1-2 or lead hook first to occupy their hands and keep them upright.",
+          "technical_detail": "1-2-head kick or hook-head kick. Punches keep them from ducking into the shot.",
+          "risk": "low",
+          "implementation_difficulty": "medium"
+        },
+        {
+          "priority": 2,
+          "name": "Use the question mark kick",
+          "description": "Start the kick low (like a body kick) and redirect to the head. The initial trajectory discourages the duck.",
+          "technical_detail": "Chamber low, redirect high. Opponent expects body kick and adjusts defense accordingly.",
+          "risk": "medium",
+          "implementation_difficulty": "high"
+        },
+        {
+          "priority": 3,
+          "name": "Switch to teeps and front kicks",
+          "description": "Linear kicks (front kicks/teeps to the body or head) are faster and keep your hips square, making it much harder to shoot underneath.",
+          "technical_detail": "Front kick keeps your base and is faster to retract. Less power but much safer.",
+          "risk": "low",
+          "implementation_difficulty": "low"
+        }
+      ]
+    },
+
+    {
+      "id": "cp_009",
+      "domain": "striking",
+      "your_action": "jab_head",
+      "opponent_counter": {
+        "defense": "pull_back",
+        "attack": "rear_body_kick",
+        "name": "Pull Back + Rear Body Kick"
+      },
+      "why_it_works": "Jabbing extends your body forward. When opponent pulls back, your jab misses and you're leaning forward. They time a body kick to land as you're recovering, catching your exposed ribs.",
+      "severity": "high",
+      "frequency_in_mma": "moderate",
+      "notable_examples": ["Adesanya timing body kicks off jab misses"],
+      "adjustments": [
+        {
+          "priority": 1,
+          "name": "Don't overextend the jab",
+          "description": "Keep the jab tight and don't lunge forward. Maintain your base so you can recover or check the kick.",
+          "technical_detail": "Step jab with controlled distance. Don't lunge. Stay balanced for immediate defense.",
+          "risk": "low",
+          "implementation_difficulty": "low"
+        },
+        {
+          "priority": 2,
+          "name": "Jab and angle off",
+          "description": "Jab and immediately step laterally. The body kick hits air because you're no longer on the center line.",
+          "technical_detail": "Jab → lateral step to the lead side. Removes the kicking target.",
+          "risk": "low",
+          "implementation_difficulty": "medium"
+        },
+        {
+          "priority": 3,
+          "name": "Feint the jab, anticipate the kick, catch or check",
+          "description": "Show the jab without committing. When they fire the body kick on your feint, check it or catch it and counter.",
+          "technical_detail": "Feint jab → check kick → immediate counter cross. Turns their pattern against them.",
+          "risk": "medium",
+          "implementation_difficulty": "high"
+        }
+      ]
+    },
+
+    {
+      "id": "cp_010",
+      "domain": "takedowns",
+      "your_action": "double_leg",
+      "opponent_counter": {
+        "defense": "sprawl",
+        "attack": "guillotine",
+        "name": "Sprawl + Guillotine"
+      },
+      "why_it_works": "Shooting a double leg with your head on the inside (between opponent's arms) exposes your neck. Opponent sprawls to kill your momentum, then wraps the guillotine choke around your neck from the front headlock.",
+      "severity": "critical",
+      "frequency_in_mma": "high",
+      "notable_examples": ["Many fights — this is the most common takedown-to-submission transition"],
+      "adjustments": [
+        {
+          "priority": 1,
+          "name": "Keep your head on the outside",
+          "description": "When shooting, place your head on the outside of opponent's hip. This makes the guillotine nearly impossible to lock.",
+          "technical_detail": "Head-outside single/double. Ear pressed to opponent's hip, not their center chest.",
+          "risk": "low",
+          "implementation_difficulty": "medium"
+        },
+        {
+          "priority": 2,
+          "name": "Set up with body shots",
+          "description": "Throw body shots that force opponent to lower their hands. When their hands are low defending body, they can't lock the guillotine on your entry.",
+          "technical_detail": "Body hooks → level change → double leg. Hands are occupied defending body.",
+          "risk": "low",
+          "implementation_difficulty": "medium"
+        },
+        {
+          "priority": 3,
+          "name": "If caught, posture up and stack",
+          "description": "If you feel the guillotine lock, immediately posture up (head up, hips forward) and stack opponent's weight on their neck. Then work to pass to side control.",
+          "technical_detail": "Posture → stack → pass to the guillotine side. The guillotine becomes ineffective from side control.",
+          "risk": "medium",
+          "implementation_difficulty": "medium"
+        },
+        {
+          "priority": 4,
+          "name": "Switch to body lock takedown",
+          "description": "Instead of shooting from distance (which creates the guillotine window), close distance with strikes and transition to a body lock takedown from clinch range.",
+          "technical_detail": "Striking → clinch → body lock → trip/lift. No shooting, no exposed neck.",
+          "risk": "low",
+          "implementation_difficulty": "medium"
+        }
+      ]
+    },
+
+    {
+      "id": "cp_011",
+      "domain": "takedowns",
+      "your_action": "single_leg",
+      "opponent_counter": {
+        "defense": "whizzer",
+        "attack": "knee",
+        "name": "Whizzer + Knee to Body/Head"
+      },
+      "why_it_works": "On a single leg, opponent hooks an overhook (whizzer) on your reaching arm, killing your drive. With the whizzer controlling your posture, they fire knees to your body or head while you're bent over.",
+      "severity": "high",
+      "frequency_in_mma": "high",
+      "notable_examples": ["Thai fighters whizzering and kneeing", "Anderson Silva"],
+      "adjustments": [
+        {
+          "priority": 1,
+          "name": "Turn the corner",
+          "description": "Once you have the leg, immediately step to the outside and turn the corner (get behind them). This breaks the whizzer angle and removes the knee threat.",
+          "technical_detail": "Grip leg → step outside → turn 90° behind them. Whizzer becomes powerless when you're behind their hip.",
+          "risk": "low",
+          "implementation_difficulty": "medium"
+        },
+        {
+          "priority": 2,
+          "name": "Elevate the leg high",
+          "description": "Lift their caught leg as high as possible. This puts them on one leg and makes it nearly impossible to generate power on the knees.",
+          "technical_detail": "Shelf the leg on your shoulder. They're hopping on one leg and can't generate knee power.",
+          "risk": "medium",
+          "implementation_difficulty": "medium"
+        },
+        {
+          "priority": 3,
+          "name": "Switch to a double leg mid-shot",
+          "description": "If the whizzer kills your single leg, immediately grab the other leg and convert to a double. The whizzer becomes useless against a double leg drive.",
+          "technical_detail": "Single leg → grab second leg → drive through for double. Forces them to abandon the whizzer.",
+          "risk": "medium",
+          "implementation_difficulty": "high"
+        }
+      ]
+    },
+
+    {
+      "id": "cp_012",
+      "domain": "takedowns",
+      "your_action": "double_leg",
+      "opponent_counter": {
+        "defense": "sprawl",
+        "attack": "knee_on_entry",
+        "name": "Knee on Entry"
+      },
+      "why_it_works": "When you lower your level to shoot, your head drops into knee range. A well-timed knee on entry meets your face as you drive forward, using your own momentum against you.",
+      "severity": "critical",
+      "frequency_in_mma": "moderate",
+      "notable_examples": ["Masvidal flying knee vs. Askren", "Anderson Silva"],
+      "adjustments": [
+        {
+          "priority": 1,
+          "name": "Change levels with your hands up first",
+          "description": "Level change with your hands still protecting your face. Only reach for the legs once you're at leg level with a protected head.",
+          "technical_detail": "Hands-up level change → then shoot. Extra 0.2s but the knee bounces off your guard.",
+          "risk": "low",
+          "implementation_difficulty": "medium"
+        },
+        {
+          "priority": 2,
+          "name": "Set up with strikes that force their weight backward",
+          "description": "Use jabs, straights, and body shots that push opponent backward. When their weight is on the back foot, they can't generate power on the knee.",
+          "technical_detail": "Pressure → strikes → shoot when they're retreating. A retreating fighter can't knee effectively.",
+          "risk": "low",
+          "implementation_difficulty": "medium"
+        },
+        {
+          "priority": 3,
+          "name": "Shoot from clinch range instead of distance",
+          "description": "Close distance with strikes, engage in clinch, then take down from clinch range. Eliminates the space needed for a knee on entry.",
+          "technical_detail": "Striking → clinch → inside trip or body lock. No open-space shot = no knee opportunity.",
+          "risk": "low",
+          "implementation_difficulty": "medium"
+        }
+      ]
+    },
+
+    {
+      "id": "cp_013",
+      "domain": "clinch",
+      "your_action": "thai_clinch",
+      "opponent_counter": {
+        "defense": "frame_and_separate",
+        "attack": "rear_uppercut",
+        "name": "Frame Out + Uppercut on Break"
+      },
+      "why_it_works": "When you pull opponent into a Thai clinch, they frame against your body with their forearms and push out. As they create separation, they fire an uppercut through the gap. You're off-balance from the push and the uppercut lands clean.",
+      "severity": "high",
+      "frequency_in_mma": "moderate",
+      "notable_examples": ["Ngannou breaking clinch with uppercut"],
+      "adjustments": [
+        {
+          "priority": 1,
+          "name": "Knee immediately on clinch entry",
+          "description": "Don't hold the clinch waiting. As soon as you get the plum, immediately fire a knee. This punishes the frame attempt before they can separate.",
+          "technical_detail": "Clinch → immediate knee to body. The knee lands before they establish the frame.",
+          "risk": "low",
+          "implementation_difficulty": "low"
+        },
+        {
+          "priority": 2,
+          "name": "Off-balance before they frame",
+          "description": "Pull their head down and turn them the instant you get the clinch. A moving, off-balance opponent can't frame effectively.",
+          "technical_detail": "Snap head down → drag in a circle. Constant motion prevents the frame-and-separate.",
+          "risk": "low",
+          "implementation_difficulty": "medium"
+        },
+        {
+          "priority": 3,
+          "name": "Transition to body lock instead",
+          "description": "If they keep framing out of the plum, switch to an underhook → body lock. Body lock is much harder to frame out of.",
+          "technical_detail": "Swim under their frame → underhook → body lock. Tighter control, less separation space.",
+          "risk": "medium",
+          "implementation_difficulty": "medium"
+        }
+      ]
+    },
+
+    {
+      "id": "cp_014",
+      "domain": "striking",
+      "your_action": "lead_calf_kick",
+      "opponent_counter": {
+        "defense": "check_kick",
+        "attack": "cross_head",
+        "name": "Check + Immediate Cross"
+      },
+      "why_it_works": "Calf kicks drop your hands slightly and shift weight to the rear. Opponent checks with the shin, maintaining their base, and immediately fires a cross while your guard is down and you're recovering balance.",
+      "severity": "high",
+      "frequency_in_mma": "high",
+      "notable_examples": ["Gaethje counter punching off checks"],
+      "adjustments": [
+        {
+          "priority": 1,
+          "name": "Hands stay high during the kick",
+          "description": "Maintain guard throughout the entire kick motion. The most common error is dropping the lead hand for balance.",
+          "technical_detail": "Pin lead hand to temple, rear hand to chin during the kick. Drill this specifically.",
+          "risk": "low",
+          "implementation_difficulty": "medium"
+        },
+        {
+          "priority": 2,
+          "name": "Kick and exit at an angle",
+          "description": "After the calf kick lands or is checked, don't return to center. Step to the outside angle away from the cross.",
+          "technical_detail": "Calf kick → pivot on landing foot to the outside. Cross misses because you're no longer on the line.",
+          "risk": "low",
+          "implementation_difficulty": "medium"
+        },
+        {
+          "priority": 3,
+          "name": "Mix in oblique kicks / stomp kicks",
+          "description": "Oblique kicks target the knee/thigh from a linear angle that can't be checked as easily, and keep your hands in a better position.",
+          "technical_detail": "Oblique kick to the lead knee. Linear trajectory means faster recovery and better guard maintenance.",
+          "risk": "low",
+          "implementation_difficulty": "low"
+        }
+      ]
+    },
+
+    {
+      "id": "cp_015",
+      "domain": "striking",
+      "your_action": "cross_head",
+      "opponent_counter": {
+        "defense": "pull_back",
+        "attack": "pull_counter_cross",
+        "name": "Pull Counter (Lean Back + Straight)"
+      },
+      "why_it_works": "Opponent reads the cross, leans their head back so it misses, then fires their own straight while you're extended and off-balance from the miss.",
+      "severity": "critical",
+      "frequency_in_mma": "high",
+      "notable_examples": ["McGregor pull counter vs. Aldo (KO)", "Whittaker"],
+      "adjustments": [
+        {
+          "priority": 1,
+          "name": "Don't load up on the cross",
+          "description": "Throw at 80% power, prioritizing speed and recovery over knockout power. A faster cross closes the pull-counter window.",
+          "technical_detail": "Snap cross (speed emphasis) vs. loaded cross (power emphasis). 20% less power but 30% faster recovery.",
+          "risk": "low",
+          "implementation_difficulty": "low"
+        },
+        {
+          "priority": 2,
+          "name": "Follow cross with a hook",
+          "description": "1-2-3 combination. If they pull back from the cross, the hook has extended range and catches them as they return forward.",
+          "technical_detail": "Cross → lead hook. The hook covers the pull-counter line and catches them coming back.",
+          "risk": "medium",
+          "implementation_difficulty": "low"
+        },
+        {
+          "priority": 3,
+          "name": "Close distance and clinch after the cross",
+          "description": "Instead of pulling back after the cross (where the pull counter catches you), surge forward into clinch range. No room for the counter.",
+          "technical_detail": "Cross → step through → collar tie or underhook. Nullifies the counter timing.",
+          "risk": "medium",
+          "implementation_difficulty": "medium"
+        }
+      ]
+    },
+
+    {
+      "id": "cp_016",
+      "domain": "striking",
+      "your_action": "lead_hook_head",
+      "opponent_counter": {
+        "defense": "duck_under",
+        "attack": "cross_head",
+        "name": "Duck Under + Cross"
+      },
+      "why_it_works": "The hook is a wide arc that passes over a ducking opponent. They level-change under the hook and fire a cross from below, targeting your chin which is exposed because your lead hand is committed to the hook.",
+      "severity": "high",
+      "frequency_in_mma": "high",
+      "notable_examples": ["Wrestlers ducking hooks into shots", "Khabib"],
+      "adjustments": [
+        {
+          "priority": 1,
+          "name": "Throw a tight check hook",
+          "description": "Instead of a wide hook, throw a short, tight hook while pivoting. The pivot takes you off the center line, and the tight arc is harder to duck.",
+          "technical_detail": "Check hook: hook + pivot on lead foot. You move ~45° as they duck, and they duck into empty space.",
+          "risk": "low",
+          "implementation_difficulty": "high"
+        },
+        {
+          "priority": 2,
+          "name": "Follow the hook with a knee or uppercut",
+          "description": "If they duck the hook, a knee or uppercut is already on the way, targeting where their head goes when they duck.",
+          "technical_detail": "Hook → rear uppercut or lead knee. Catches them at the bottom of the duck.",
+          "risk": "medium",
+          "implementation_difficulty": "medium"
+        },
+        {
+          "priority": 3,
+          "name": "Use the hook to set up a takedown",
+          "description": "Throw the hook knowing they'll duck. When they duck, transition to a front headlock or guillotine instead of following up with strikes.",
+          "technical_detail": "Hook feint → collar tie or guillotine on their duck. Uses their defensive habit against them.",
+          "risk": "medium",
+          "implementation_difficulty": "high"
+        }
+      ]
+    },
+
+    {
+      "id": "cp_017",
+      "domain": "striking",
+      "your_action": "rear_body_kick",
+      "opponent_counter": {
+        "defense": "step_in",
+        "attack": "lead_hook_head",
+        "name": "Step Inside + Lead Hook"
+      },
+      "why_it_works": "Body kicks have a long execution time. By stepping inside the arc of the kick, opponent jams it and reduces its power. From close range, they land a lead hook on your exposed head while your kicking-side arm is committed to balance.",
+      "severity": "high",
+      "frequency_in_mma": "moderate",
+      "notable_examples": ["Pressure fighters stepping inside kicks"],
+      "adjustments": [
+        {
+          "priority": 1,
+          "name": "Teep to maintain range before kicking",
+          "description": "Push them back with a teep before throwing the body kick. This creates the space you need and prevents them from stepping inside.",
+          "technical_detail": "Teep → body kick. The teep pushes them back to optimal kicking range.",
+          "risk": "low",
+          "implementation_difficulty": "medium"
+        },
+        {
+          "priority": 2,
+          "name": "Throw after a combination",
+          "description": "Throw the kick at the end of a punch combination. The punches occupy their guard and prevent the aggressive step-in.",
+          "technical_detail": "1-2-body kick. They're defending punches, not stepping forward.",
+          "risk": "low",
+          "implementation_difficulty": "low"
+        },
+        {
+          "priority": 3,
+          "name": "Switch to a switch kick",
+          "description": "A switch kick (lead leg body kick with a stance switch) is faster and gives them less time to step inside.",
+          "technical_detail": "Switch step → lead leg body kick. Faster execution, less telegraph.",
+          "risk": "medium",
+          "implementation_difficulty": "high"
+        }
+      ]
+    },
+
+    {
+      "id": "cp_018",
+      "domain": "ground",
+      "your_action": "guard_pass_attempt",
+      "opponent_counter": {
+        "defense": "guard_retention",
+        "attack": "triangle_choke",
+        "name": "Failed Pass → Triangle"
+      },
+      "why_it_works": "During a guard pass attempt, you often isolate one arm inside and one outside the guard. This arm positioning is exactly what the triangle choke requires. If the pass fails, the bottom fighter locks the triangle.",
+      "severity": "critical",
+      "frequency_in_mma": "moderate",
+      "notable_examples": ["Ortega triangle catches", "Oliveira off guard"],
+      "adjustments": [
+        {
+          "priority": 1,
+          "name": "Keep both arms in or both arms out",
+          "description": "Never have one arm in and one arm out of the guard. This is the triangle setup. Keep posture and both arms in the same position.",
+          "technical_detail": "Both arms inside the guard (bicep control) or both outside (double unders). Never split.",
+          "risk": "low",
+          "implementation_difficulty": "medium"
+        },
+        {
+          "priority": 2,
+          "name": "Maintain posture during passes",
+          "description": "Keep your head up and back straight. A broken posture allows the bottom fighter to control your head and set up the triangle.",
+          "technical_detail": "Hands on hips/biceps, head up, back straight. Base first, pass second.",
+          "risk": "low",
+          "implementation_difficulty": "medium"
+        },
+        {
+          "priority": 3,
+          "name": "Use pressure passing instead of speed passing",
+          "description": "Slow, heavy pressure passes (knee slide, over-under) keep your weight on them and make it harder to create the space needed for a triangle lock.",
+          "technical_detail": "Heavy pressure → knee slide pass. Your weight prevents the hip elevation needed for the triangle.",
+          "risk": "low",
+          "implementation_difficulty": "medium"
+        }
+      ]
+    },
+
+    {
+      "id": "cp_019",
+      "domain": "ground",
+      "your_action": "stand_up_attempt",
+      "opponent_counter": {
+        "defense": "re_takedown",
+        "attack": "back_take",
+        "name": "Scramble → Back Take"
+      },
+      "why_it_works": "When you attempt to stand up, you turn away from opponent to create space. This exposes your back. If the re-takedown lands, they often end up behind you with hooks or a body triangle.",
+      "severity": "critical",
+      "frequency_in_mma": "high",
+      "notable_examples": ["Khabib back takes off stand-up attempts", "Islam Makhachev"],
+      "adjustments": [
+        {
+          "priority": 1,
+          "name": "Face your opponent while standing",
+          "description": "Stand up towards your opponent, not away. Use a technical stand-up that keeps you facing them at all times.",
+          "technical_detail": "Technical stand-up: posting on far hand, foot steps up, face stays toward opponent. Never turn your back.",
+          "risk": "low",
+          "implementation_difficulty": "medium"
+        },
+        {
+          "priority": 2,
+          "name": "Use the cage",
+          "description": "Work to the cage and use it as a wall to stand up against. The cage prevents them from getting behind you.",
+          "technical_detail": "Cage walk: back against cage, walk feet up, frame and stand. Cage blocks the back take angle.",
+          "risk": "low",
+          "implementation_difficulty": "medium"
+        },
+        {
+          "priority": 3,
+          "name": "Create a scramble with an underhook",
+          "description": "Get an underhook on the way up. The underhook prevents them from circling to your back and gives you inside control.",
+          "technical_detail": "Underhook on stand-up side → drive into them as you stand. Inside position denies the back.",
+          "risk": "medium",
+          "implementation_difficulty": "high"
+        }
+      ]
+    },
+
+    {
+      "id": "cp_020",
+      "domain": "striking",
+      "your_action": "lead_teep",
+      "opponent_counter": {
+        "defense": "catch_kick",
+        "attack": "cross_counter",
+        "name": "Catch Teep + Sweep / Push Off-Balance"
+      },
+      "why_it_works": "The teep extends the leg linearly, making it catchable under the arm. Once caught, you're hopping on one leg. Opponent can sweep, push you off balance, or fire a cross as you're stuck.",
+      "severity": "moderate",
+      "frequency_in_mma": "moderate",
+      "notable_examples": ["Many Thai boxing examples"],
+      "adjustments": [
+        {
+          "priority": 1,
+          "name": "Snap the teep back immediately",
+          "description": "Don't push through with the teep. Snap it out and retract instantly. A fast teep is nearly impossible to catch.",
+          "technical_detail": "Pop teep: fast extension and retraction. Think 'touch' not 'push'. Harder to catch.",
+          "risk": "low",
+          "implementation_difficulty": "low"
+        },
+        {
+          "priority": 2,
+          "name": "Target the hip/thigh instead of the body",
+          "description": "A low teep to the hip or thigh is harder to catch because the arm can't scoop it as easily. Still pushes them back.",
+          "technical_detail": "Low teep to the hip crease. Lower target = harder catch angle for their arms.",
+          "risk": "low",
+          "implementation_difficulty": "low"
+        },
+        {
+          "priority": 3,
+          "name": "Teep and immediately circle",
+          "description": "Throw the teep and pivot to the outside before they can catch and advance. Even if caught briefly, the angle change frees the leg.",
+          "technical_detail": "Teep → pivot on base foot. Angle change pulls the leg out of the catch.",
+          "risk": "low",
+          "implementation_difficulty": "medium"
+        }
+      ]
+    }
+  ]
+}

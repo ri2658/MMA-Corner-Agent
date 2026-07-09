@@ -1,0 +1,647 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "description": "MMA action taxonomy for counter-identification pipeline",
+    "domains": ["striking", "clinch", "takedowns", "ground"],
+    "notes": "Each action has a unique ID, domain, category, and properties relevant to counter-detection timing and risk assessment."
+  },
+
+  "actions": {
+    "striking": {
+      "lead_hand": [
+        {
+          "id": "jab_head",
+          "name": "Jab (Head)",
+          "description": "Lead hand straight punch targeting the head",
+          "execution_time_ms": [150, 300],
+          "recovery_time_ms": [100, 250],
+          "commitment_level": "low",
+          "leaves_open": ["rear_side_head", "body"],
+          "common_setups": ["feint", "step_jab", "jab_to_cross"],
+          "frequency_rank": 1
+        },
+        {
+          "id": "jab_body",
+          "name": "Jab (Body)",
+          "description": "Lead hand straight punch targeting the body",
+          "execution_time_ms": [200, 350],
+          "recovery_time_ms": [150, 300],
+          "commitment_level": "low",
+          "leaves_open": ["head", "rear_side_head"],
+          "common_setups": ["jab_head_feint", "level_change"],
+          "frequency_rank": 8
+        },
+        {
+          "id": "lead_hook_head",
+          "name": "Lead Hook (Head)",
+          "description": "Lead hand hook targeting the head/jaw",
+          "execution_time_ms": [250, 400],
+          "recovery_time_ms": [200, 400],
+          "commitment_level": "medium",
+          "leaves_open": ["body", "rear_straight_line"],
+          "common_setups": ["jab", "slip_outside", "1_2"],
+          "frequency_rank": 4
+        },
+        {
+          "id": "lead_hook_body",
+          "name": "Lead Hook (Body)",
+          "description": "Lead hand hook targeting the liver/ribs",
+          "execution_time_ms": [250, 450],
+          "recovery_time_ms": [200, 400],
+          "commitment_level": "medium",
+          "leaves_open": ["head", "rear_overhand"],
+          "common_setups": ["jab_head", "lead_hook_head_feint"],
+          "frequency_rank": 9
+        },
+        {
+          "id": "lead_uppercut",
+          "name": "Lead Uppercut",
+          "description": "Lead hand uppercut, typically from close range",
+          "execution_time_ms": [250, 400],
+          "recovery_time_ms": [200, 350],
+          "commitment_level": "medium",
+          "leaves_open": ["rear_hook", "overhand", "head"],
+          "common_setups": ["jab", "body_jab", "clinch_break"],
+          "frequency_rank": 10
+        }
+      ],
+
+      "rear_hand": [
+        {
+          "id": "cross_head",
+          "name": "Cross / Straight (Head)",
+          "description": "Rear hand straight punch targeting the head",
+          "execution_time_ms": [200, 400],
+          "recovery_time_ms": [200, 400],
+          "commitment_level": "medium",
+          "leaves_open": ["lead_hook", "lead_side_head", "body"],
+          "common_setups": ["jab", "feint_jab"],
+          "frequency_rank": 2
+        },
+        {
+          "id": "cross_body",
+          "name": "Cross / Straight (Body)",
+          "description": "Rear hand straight punch targeting the body",
+          "execution_time_ms": [250, 450],
+          "recovery_time_ms": [250, 450],
+          "commitment_level": "medium",
+          "leaves_open": ["lead_hook_head", "head"],
+          "common_setups": ["jab_head", "1_2_head"],
+          "frequency_rank": 11
+        },
+        {
+          "id": "rear_hook_head",
+          "name": "Rear Hook (Head)",
+          "description": "Rear hand hook targeting the head",
+          "execution_time_ms": [300, 500],
+          "recovery_time_ms": [250, 450],
+          "commitment_level": "high",
+          "leaves_open": ["lead_straight_line", "body", "takedown"],
+          "common_setups": ["jab_cross", "lead_hook"],
+          "frequency_rank": 7
+        },
+        {
+          "id": "rear_uppercut",
+          "name": "Rear Uppercut",
+          "description": "Rear hand uppercut, powerful close-range strike",
+          "execution_time_ms": [300, 450],
+          "recovery_time_ms": [250, 400],
+          "commitment_level": "high",
+          "leaves_open": ["lead_hook", "overhand", "clinch_entry"],
+          "common_setups": ["jab", "lead_hook_body", "clinch_break"],
+          "frequency_rank": 12
+        },
+        {
+          "id": "overhand_right",
+          "name": "Overhand (Rear)",
+          "description": "Looping rear hand punch thrown over the top",
+          "execution_time_ms": [350, 600],
+          "recovery_time_ms": [300, 600],
+          "commitment_level": "very_high",
+          "leaves_open": ["lead_hook", "body", "takedown", "straight_counter"],
+          "common_setups": ["jab", "level_change_feint", "naked"],
+          "frequency_rank": 6
+        }
+      ],
+
+      "kicks": [
+        {
+          "id": "lead_teep",
+          "name": "Lead Teep / Front Kick",
+          "description": "Lead leg push kick to create distance or target body",
+          "execution_time_ms": [300, 500],
+          "recovery_time_ms": [300, 500],
+          "commitment_level": "low",
+          "leaves_open": ["catch_to_sweep", "outside_angle"],
+          "common_setups": ["range_management", "after_combination"],
+          "frequency_rank": 13
+        },
+        {
+          "id": "rear_teep",
+          "name": "Rear Teep / Front Kick",
+          "description": "Rear leg push kick, more powerful but slower",
+          "execution_time_ms": [400, 600],
+          "recovery_time_ms": [350, 550],
+          "commitment_level": "medium",
+          "leaves_open": ["catch_to_sweep", "angle_off_cross"],
+          "common_setups": ["jab", "after_retreat"],
+          "frequency_rank": 16
+        },
+        {
+          "id": "lead_body_kick",
+          "name": "Lead Roundhouse (Body)",
+          "description": "Lead leg roundhouse kick to the body/ribs",
+          "execution_time_ms": [350, 550],
+          "recovery_time_ms": [300, 500],
+          "commitment_level": "medium",
+          "leaves_open": ["cross_counter", "catch_to_takedown"],
+          "common_setups": ["jab", "switch_step"],
+          "frequency_rank": 14
+        },
+        {
+          "id": "rear_body_kick",
+          "name": "Rear Roundhouse (Body)",
+          "description": "Rear leg roundhouse kick to the body, very powerful",
+          "execution_time_ms": [400, 650],
+          "recovery_time_ms": [350, 600],
+          "commitment_level": "high",
+          "leaves_open": ["cross_counter", "catch_to_sweep", "step_in_hook"],
+          "common_setups": ["1_2", "lead_hook", "jab"],
+          "frequency_rank": 5
+        },
+        {
+          "id": "lead_head_kick",
+          "name": "Lead Roundhouse (Head)",
+          "description": "Lead leg roundhouse kick targeting the head",
+          "execution_time_ms": [400, 650],
+          "recovery_time_ms": [350, 600],
+          "commitment_level": "high",
+          "leaves_open": ["duck_under_cross", "catch_to_takedown", "body"],
+          "common_setups": ["switch_step", "jab_feint", "question_mark_kick"],
+          "frequency_rank": 18
+        },
+        {
+          "id": "rear_head_kick",
+          "name": "Rear Roundhouse (Head)",
+          "description": "Rear leg roundhouse kick targeting the head, fight-ending power",
+          "execution_time_ms": [450, 700],
+          "recovery_time_ms": [400, 650],
+          "commitment_level": "very_high",
+          "leaves_open": ["duck_under_cross", "catch_to_takedown", "body", "leg"],
+          "common_setups": ["1_2", "body_kick_feint", "lead_hook"],
+          "frequency_rank": 15
+        },
+        {
+          "id": "lead_calf_kick",
+          "name": "Lead Calf Kick",
+          "description": "Lead leg low kick targeting the calf/lower leg",
+          "execution_time_ms": [250, 400],
+          "recovery_time_ms": [200, 350],
+          "commitment_level": "low",
+          "leaves_open": ["cross_counter", "check_and_return"],
+          "common_setups": ["jab", "after_exchange", "naked"],
+          "frequency_rank": 3
+        },
+        {
+          "id": "rear_leg_kick",
+          "name": "Rear Low Kick (Leg)",
+          "description": "Rear leg roundhouse kick targeting the thigh or calf",
+          "execution_time_ms": [300, 500],
+          "recovery_time_ms": [250, 450],
+          "commitment_level": "medium",
+          "leaves_open": ["cross_counter", "check_and_return", "takedown"],
+          "common_setups": ["1_2", "lead_hook", "naked"],
+          "frequency_rank": 3
+        },
+        {
+          "id": "spinning_back_kick",
+          "name": "Spinning Back Kick",
+          "description": "Spinning rear thrust kick to the body",
+          "execution_time_ms": [500, 800],
+          "recovery_time_ms": [400, 700],
+          "commitment_level": "very_high",
+          "leaves_open": ["angle_off_counter", "back_exposure", "takedown"],
+          "common_setups": ["after_combination", "off_missed_strike"],
+          "frequency_rank": 22
+        },
+        {
+          "id": "spinning_heel_kick",
+          "name": "Spinning Heel Kick",
+          "description": "Spinning heel kick targeting the head",
+          "execution_time_ms": [550, 900],
+          "recovery_time_ms": [450, 750],
+          "commitment_level": "very_high",
+          "leaves_open": ["duck_under", "back_exposure", "takedown"],
+          "common_setups": ["after_combination", "level_change_feint"],
+          "frequency_rank": 25
+        }
+      ],
+
+      "knees": [
+        {
+          "id": "lead_knee_body",
+          "name": "Lead Knee (Body)",
+          "description": "Lead leg knee strike to the body, typically from clinch range",
+          "execution_time_ms": [200, 400],
+          "recovery_time_ms": [200, 350],
+          "commitment_level": "medium",
+          "leaves_open": ["takedown_on_one_leg", "cross_counter"],
+          "common_setups": ["clinch", "closing_distance"],
+          "frequency_rank": 17
+        },
+        {
+          "id": "flying_knee",
+          "name": "Flying Knee",
+          "description": "Jumping knee strike, extremely high commitment",
+          "execution_time_ms": [500, 800],
+          "recovery_time_ms": [400, 700],
+          "commitment_level": "very_high",
+          "leaves_open": ["sprawl_position", "takedown", "clinch"],
+          "common_setups": ["level_change_feint", "off_cage", "naked"],
+          "frequency_rank": 24
+        }
+      ],
+
+      "elbows": [
+        {
+          "id": "lead_elbow",
+          "name": "Lead Elbow",
+          "description": "Lead elbow strike, close range, often cuts",
+          "execution_time_ms": [200, 350],
+          "recovery_time_ms": [150, 300],
+          "commitment_level": "medium",
+          "leaves_open": ["clinch_entry", "rear_hook"],
+          "common_setups": ["clinch_break", "after_slip", "close_range_exchange"],
+          "frequency_rank": 19
+        },
+        {
+          "id": "rear_elbow",
+          "name": "Rear Elbow",
+          "description": "Rear elbow strike, powerful close-range weapon",
+          "execution_time_ms": [250, 400],
+          "recovery_time_ms": [200, 350],
+          "commitment_level": "high",
+          "leaves_open": ["clinch_entry", "lead_hook", "takedown"],
+          "common_setups": ["clinch_break", "spinning_entry"],
+          "frequency_rank": 21
+        },
+        {
+          "id": "spinning_elbow",
+          "name": "Spinning Elbow",
+          "description": "Spinning back elbow, very high damage potential",
+          "execution_time_ms": [450, 750],
+          "recovery_time_ms": [350, 600],
+          "commitment_level": "very_high",
+          "leaves_open": ["back_exposure", "takedown", "clinch"],
+          "common_setups": ["after_combination", "feint"],
+          "frequency_rank": 26
+        }
+      ]
+    },
+
+    "clinch": [
+      {
+        "id": "collar_tie",
+        "name": "Collar Tie",
+        "description": "Hand behind opponent's head/neck for control",
+        "execution_time_ms": [200, 400],
+        "recovery_time_ms": [150, 300],
+        "commitment_level": "medium",
+        "leaves_open": ["underhook", "body_strikes"],
+        "common_setups": ["closing_distance", "after_jab"],
+        "frequency_rank": 20
+      },
+      {
+        "id": "underhook",
+        "name": "Underhook Entry",
+        "description": "Arm under opponent's armpit for inside control",
+        "execution_time_ms": [200, 400],
+        "recovery_time_ms": [150, 300],
+        "commitment_level": "medium",
+        "leaves_open": ["whizzer", "knee"],
+        "common_setups": ["level_change", "off_jab"],
+        "frequency_rank": 20
+      },
+      {
+        "id": "thai_clinch",
+        "name": "Thai Clinch (Plum)",
+        "description": "Double collar tie controlling opponent's posture",
+        "execution_time_ms": [300, 500],
+        "recovery_time_ms": [200, 400],
+        "commitment_level": "high",
+        "leaves_open": ["body_lock_counter", "uppercuts", "frame_and_separate"],
+        "common_setups": ["collar_tie", "after_exchange"],
+        "frequency_rank": 20
+      },
+      {
+        "id": "body_lock",
+        "name": "Body Lock",
+        "description": "Arms wrapped around opponent's torso",
+        "execution_time_ms": [300, 500],
+        "recovery_time_ms": [250, 400],
+        "commitment_level": "high",
+        "leaves_open": ["whizzer", "frame_and_separate", "elbows"],
+        "common_setups": ["underhook_to_body_lock", "level_change"],
+        "frequency_rank": 20
+      }
+    ],
+
+    "takedowns": [
+      {
+        "id": "single_leg",
+        "name": "Single Leg Takedown",
+        "description": "Shooting to grab one leg for takedown",
+        "execution_time_ms": [400, 700],
+        "recovery_time_ms": [500, 900],
+        "commitment_level": "high",
+        "leaves_open": ["sprawl", "guillotine", "knee", "whizzer"],
+        "common_setups": ["jab", "level_change_feint", "body_jab"],
+        "frequency_rank": 7
+      },
+      {
+        "id": "double_leg",
+        "name": "Double Leg Takedown",
+        "description": "Shooting to grab both legs, driving through",
+        "execution_time_ms": [400, 700],
+        "recovery_time_ms": [500, 1000],
+        "commitment_level": "very_high",
+        "leaves_open": ["sprawl", "guillotine", "knee_on_entry", "crossface"],
+        "common_setups": ["1_2", "level_change", "against_cage"],
+        "frequency_rank": 6
+      },
+      {
+        "id": "body_lock_takedown",
+        "name": "Body Lock Takedown",
+        "description": "Takedown from body lock clinch position",
+        "execution_time_ms": [500, 800],
+        "recovery_time_ms": [400, 700],
+        "commitment_level": "high",
+        "leaves_open": ["whizzer", "overhook_to_back", "hip_escape"],
+        "common_setups": ["clinch", "cage_pressing"],
+        "frequency_rank": 14
+      },
+      {
+        "id": "inside_trip",
+        "name": "Inside Trip",
+        "description": "Tripping opponent's leg from inside position in clinch",
+        "execution_time_ms": [300, 500],
+        "recovery_time_ms": [300, 500],
+        "commitment_level": "medium",
+        "leaves_open": ["overhook_counter", "whizzer"],
+        "common_setups": ["clinch", "collar_tie"],
+        "frequency_rank": 17
+      },
+      {
+        "id": "outside_trip",
+        "name": "Outside Trip",
+        "description": "Tripping opponent's leg from outside position",
+        "execution_time_ms": [300, 500],
+        "recovery_time_ms": [300, 500],
+        "commitment_level": "medium",
+        "leaves_open": ["balance_counter", "underhook"],
+        "common_setups": ["clinch", "overhook"],
+        "frequency_rank": 19
+      },
+      {
+        "id": "foot_sweep",
+        "name": "Foot Sweep",
+        "description": "Sweeping opponent's foot during weight transfer",
+        "execution_time_ms": [200, 400],
+        "recovery_time_ms": [200, 350],
+        "commitment_level": "low",
+        "leaves_open": ["counter_sweep", "clinch_entry"],
+        "common_setups": ["clinch", "striking_range", "opponent_stepping"],
+        "frequency_rank": 23
+      }
+    ],
+
+    "ground": {
+      "positions": [
+        {
+          "id": "full_guard",
+          "name": "Full Guard (Bottom)",
+          "description": "On back with legs wrapped around opponent"
+        },
+        {
+          "id": "half_guard",
+          "name": "Half Guard (Bottom)",
+          "description": "On back with one leg entangled"
+        },
+        {
+          "id": "side_control_top",
+          "name": "Side Control (Top)",
+          "description": "Controlling opponent from side, chest-to-chest"
+        },
+        {
+          "id": "mount_top",
+          "name": "Mount (Top)",
+          "description": "Sitting on opponent's torso"
+        },
+        {
+          "id": "back_control",
+          "name": "Back Control",
+          "description": "Behind opponent with hooks or body triangle"
+        },
+        {
+          "id": "turtle_top",
+          "name": "Turtle (Top)",
+          "description": "On top of opponent who is turtled up"
+        }
+      ],
+      "transitions": [
+        {
+          "id": "guard_pass_attempt",
+          "name": "Guard Pass Attempt",
+          "description": "Attempting to pass opponent's guard to a dominant position",
+          "commitment_level": "high",
+          "leaves_open": ["sweep", "submission", "return_to_guard"]
+        },
+        {
+          "id": "mount_transition",
+          "name": "Mount Transition",
+          "description": "Moving from side control to mount",
+          "commitment_level": "medium",
+          "leaves_open": ["half_guard_recovery", "bridge_escape"]
+        },
+        {
+          "id": "back_take",
+          "name": "Back Take",
+          "description": "Transitioning to back control",
+          "commitment_level": "high",
+          "leaves_open": ["turtle_defense", "guard_recovery"]
+        },
+        {
+          "id": "stand_up_attempt",
+          "name": "Stand Up Attempt",
+          "description": "Attempting to return to feet from bottom position",
+          "commitment_level": "medium",
+          "leaves_open": ["re_takedown", "back_take"]
+        }
+      ],
+      "submissions": [
+        {
+          "id": "rear_naked_choke",
+          "name": "Rear Naked Choke",
+          "description": "Chokehold from back control",
+          "from_positions": ["back_control"],
+          "commitment_level": "high"
+        },
+        {
+          "id": "guillotine",
+          "name": "Guillotine Choke",
+          "description": "Front headlock choke, often caught on takedown entries",
+          "from_positions": ["standing", "full_guard"],
+          "commitment_level": "high"
+        },
+        {
+          "id": "triangle_choke",
+          "name": "Triangle Choke",
+          "description": "Leg triangle from guard",
+          "from_positions": ["full_guard"],
+          "commitment_level": "high"
+        },
+        {
+          "id": "armbar",
+          "name": "Armbar",
+          "description": "Hyperextension of elbow joint",
+          "from_positions": ["full_guard", "mount_top", "back_control"],
+          "commitment_level": "very_high"
+        },
+        {
+          "id": "kimura",
+          "name": "Kimura",
+          "description": "Shoulder lock, double wristlock",
+          "from_positions": ["full_guard", "half_guard", "side_control_top"],
+          "commitment_level": "high"
+        },
+        {
+          "id": "darce_choke",
+          "name": "D'Arce Choke",
+          "description": "Arm triangle variation from top position",
+          "from_positions": ["side_control_top", "half_guard"],
+          "commitment_level": "high"
+        },
+        {
+          "id": "anaconda_choke",
+          "name": "Anaconda Choke",
+          "description": "Arm triangle from front headlock",
+          "from_positions": ["turtle_top", "standing"],
+          "commitment_level": "high"
+        }
+      ]
+    }
+  },
+
+  "defensive_actions": {
+    "striking_defense": [
+      {
+        "id": "slip_inside",
+        "name": "Slip Inside",
+        "description": "Head movement slipping to the inside of an incoming punch",
+        "effective_against": ["jab_head", "cross_head"],
+        "creates_opportunity": ["lead_hook_head", "rear_uppercut", "body_hook"]
+      },
+      {
+        "id": "slip_outside",
+        "name": "Slip Outside",
+        "description": "Head movement slipping to the outside of an incoming punch",
+        "effective_against": ["jab_head", "cross_head"],
+        "creates_opportunity": ["cross_head", "rear_body_kick", "angle_off"]
+      },
+      {
+        "id": "pull_back",
+        "name": "Pull / Lean Back",
+        "description": "Leaning the head and torso backward to avoid strikes",
+        "effective_against": ["jab_head", "cross_head", "lead_hook_head", "lead_hook_body"],
+        "creates_opportunity": ["pull_counter_cross", "pull_counter_kick"]
+      },
+      {
+        "id": "parry",
+        "name": "Parry",
+        "description": "Deflecting incoming strikes with the hand",
+        "effective_against": ["jab_head", "cross_head"],
+        "creates_opportunity": ["cross_head", "lead_hook_head"]
+      },
+      {
+        "id": "high_block",
+        "name": "High Block / Shell",
+        "description": "Hands up covering the head to absorb strikes",
+        "effective_against": ["lead_hook_head", "rear_hook_head", "overhand_right"],
+        "creates_opportunity": ["body_strikes", "low_kicks"]
+      },
+      {
+        "id": "low_block",
+        "name": "Low Block / Check",
+        "description": "Lowering guard or raising shin to check kicks",
+        "effective_against": ["lead_calf_kick", "rear_leg_kick", "lead_body_kick", "rear_body_kick"],
+        "creates_opportunity": ["head_strikes", "cross_counter"]
+      },
+      {
+        "id": "roll_under",
+        "name": "Roll Under / Bob and Weave",
+        "description": "Bending at the waist to roll under hooks",
+        "effective_against": ["lead_hook_head", "rear_hook_head"],
+        "creates_opportunity": ["body_hook", "uppercut", "level_change"]
+      },
+      {
+        "id": "shoulder_roll",
+        "name": "Shoulder Roll (Philly Shell)",
+        "description": "Rolling the shoulder to deflect straight punches",
+        "effective_against": ["cross_head", "jab_head"],
+        "creates_opportunity": ["pull_counter_hook", "cross_counter"]
+      },
+      {
+        "id": "check_kick",
+        "name": "Shin Check",
+        "description": "Raising the shin to block incoming low/body kicks",
+        "effective_against": ["lead_calf_kick", "rear_leg_kick", "lead_body_kick"],
+        "creates_opportunity": ["cross_counter", "return_kick"]
+      },
+      {
+        "id": "catch_kick",
+        "name": "Catch Kick",
+        "description": "Catching an incoming kick to control opponent's leg",
+        "effective_against": ["rear_body_kick", "lead_body_kick", "lead_teep", "rear_teep"],
+        "creates_opportunity": ["sweep", "takedown", "counter_strike"]
+      }
+    ],
+
+    "grappling_defense": [
+      {
+        "id": "sprawl",
+        "name": "Sprawl",
+        "description": "Driving hips down and legs back to stuff a takedown",
+        "effective_against": ["single_leg", "double_leg"],
+        "creates_opportunity": ["front_headlock", "guillotine", "knee", "back_take"]
+      },
+      {
+        "id": "whizzer",
+        "name": "Whizzer / Overhook",
+        "description": "Overhook control to counter underhook or single leg",
+        "effective_against": ["single_leg", "underhook", "body_lock_takedown"],
+        "creates_opportunity": ["whizzer_kick", "re_pummel", "hip_throw"]
+      },
+      {
+        "id": "frame_and_separate",
+        "name": "Frame and Separate",
+        "description": "Using frames (forearms/hands on body) to create space and disengage",
+        "effective_against": ["clinch_entry", "collar_tie", "body_lock"],
+        "creates_opportunity": ["striking_range_reset", "knee"]
+      },
+      {
+        "id": "cage_walk",
+        "name": "Cage Walk (Stand Up)",
+        "description": "Using the cage to work back to feet from bottom position",
+        "effective_against": ["guard_pass_attempt", "ground_and_pound"],
+        "creates_opportunity": ["standing_reset", "single_leg"]
+      },
+      {
+        "id": "guillotine_on_entry",
+        "name": "Guillotine on Takedown Entry",
+        "description": "Catching a guillotine choke as opponent shoots for takedown",
+        "effective_against": ["single_leg", "double_leg"],
+        "creates_opportunity": ["submission_finish", "guard_pull"]
+      }
+    ]
+  }
+}
