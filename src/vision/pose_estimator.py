@@ -6,6 +6,7 @@ bounding boxes provided by the fighter tracker.
 """
 
 from dataclasses import dataclass
+import warnings
 from typing import Optional
 
 import numpy as np
@@ -104,13 +105,23 @@ class PoseResult:
 class PoseEstimator:
     """Extracts pose keypoints from video frames using MediaPipe.
 
-    Runs MediaPipe Pose within bounding boxes provided by the fighter
-    tracker, producing per-fighter keypoint results for each frame.
+    Uses the MediaPipe Tasks API (PoseLandmarker) which replaced the
+    legacy ``mediapipe.solutions.pose`` module in MediaPipe >= 0.10.
+
+    Runs within bounding boxes provided by the fighter tracker,
+    producing per-fighter keypoint results for each frame.
 
     Usage:
         estimator = PoseEstimator()
         result = estimator.estimate(frame, bbox, fighter_id="fighter_a", timestamp_s=12.5)
     """
+
+    # URL for the MediaPipe pose model
+    _MODEL_URL = (
+        "https://storage.googleapis.com/mediapipe-models/"
+        "pose_landmarker/pose_landmarker_lite/float16/latest/"
+        "pose_landmarker_lite.task"
+    )
 
     def __init__(
         self,
@@ -118,34 +129,89 @@ class PoseEstimator:
         min_detection_confidence: float = 0.5,
         min_tracking_confidence: float = 0.5,
         static_image_mode: bool = False,
+        model_path: str | None = None,
     ):
         self.model_complexity = model_complexity
         self.min_detection_confidence = min_detection_confidence
         self.min_tracking_confidence = min_tracking_confidence
         self.static_image_mode = static_image_mode
-        self._pose = None  # Lazy init
+        self._model_path = model_path
+        self._landmarker = None  # Lazy init
+        self._pose_disabled = False
+
+    def _find_model_path(self) -> str:
+        """Locate or download the pose landmarker model file."""
+        import os
+        from pathlib import Path
+
+        # Check explicit path
+        if self._model_path and os.path.isfile(self._model_path):
+            return self._model_path
+
+        # Check common locations relative to project root
+        project_root = Path(__file__).resolve().parent.parent.parent
+        candidates = [
+            project_root / "models" / "pose_landmarker_lite.task",
+            project_root / "models" / "pose_landmarker_full.task",
+            project_root / "models" / "pose_landmarker_heavy.task",
+            Path.home() / ".mediapipe" / "pose_landmarker_lite.task",
+        ]
+
+        for p in candidates:
+            if p.exists():
+                return str(p)
+
+        # Download the model
+        model_dir = project_root / "models"
+        model_dir.mkdir(exist_ok=True)
+        model_file = model_dir / "pose_landmarker_lite.task"
+
+        print(f"Downloading pose model to {model_file} ...")
+        import urllib.request
+        urllib.request.urlretrieve(self._MODEL_URL, str(model_file))
+        print("Download complete.")
+
+        return str(model_file)
 
     def _init_model(self):
-        """Initialize the MediaPipe Pose model on first use."""
-        import mediapipe as mp
+        """Initialize the MediaPipe PoseLandmarker on first use."""
+        try:
+            from mediapipe.tasks.python import BaseOptions
+            from mediapipe.tasks.python.vision import (
+                PoseLandmarker,
+                PoseLandmarkerOptions,
+                RunningMode,
+            )
 
-        self._pose = mp.solutions.pose.Pose(
-            static_image_mode=self.static_image_mode,
-            model_complexity=self.model_complexity,
-            smooth_landmarks=True,
-            enable_segmentation=False,
-            min_detection_confidence=self.min_detection_confidence,
-            min_tracking_confidence=self.min_tracking_confidence,
-        )
+            model_path = self._find_model_path()
+
+            options = PoseLandmarkerOptions(
+                base_options=BaseOptions(model_asset_path=model_path),
+                running_mode=RunningMode.IMAGE,
+                num_poses=1,
+                min_pose_detection_confidence=self.min_detection_confidence,
+                min_tracking_confidence=self.min_tracking_confidence,
+            )
+            self._landmarker = PoseLandmarker.create_from_options(options)
+
+        except Exception as exc:
+            self._landmarker = None
+            self._pose_disabled = True
+            warnings.warn(
+                f"Pose estimation disabled: {exc}. "
+                f"Video analysis will continue without pose keypoints.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
 
     def estimate(
         self,
         frame: np.ndarray,
-        bbox: Optional[tuple[int, int, int, int]] = None,
+        bbox: tuple[int, int, int, int] | None = None,
         fighter_id: str = "unknown",
         frame_index: int = 0,
         timestamp_s: float = 0.0,
-    ) -> Optional[PoseResult]:
+    ) -> PoseResult | None:
         """Run pose estimation on a single frame (or cropped region).
 
         Args:
@@ -160,10 +226,14 @@ class PoseEstimator:
         Returns:
             PoseResult if a pose is detected, None otherwise.
         """
-        if self._pose is None:
+        if self._landmarker is None and not self._pose_disabled:
             self._init_model()
 
+        if self._landmarker is None:
+            return None
+
         import cv2
+        import mediapipe as mp
 
         # Crop to bounding box if provided
         if bbox is not None:
@@ -180,20 +250,27 @@ class PoseEstimator:
             x1, y1 = 0, 0
             crop_h, crop_w = frame.shape[:2]
 
-        # MediaPipe expects RGB
+        # Convert BGR to RGB and create MediaPipe Image
         rgb = cv2.cvtColor(crop, cv2.COLOR_BGR2RGB)
-        results = self._pose.process(rgb)
+        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
 
-        if results.pose_landmarks is None:
+        # Run pose detection
+        result = self._landmarker.detect(mp_image)
+
+        if not result.pose_landmarks or len(result.pose_landmarks) == 0:
             return None
+
+        # Use the first detected pose
+        landmarks = result.pose_landmarks[0]
 
         # Extract keypoints and map back to full-frame coords
         keypoints: list[tuple[float, float, float]] = []
-        for lm in results.pose_landmarks.landmark:
-            # MediaPipe gives normalized coords [0, 1] relative to the crop
+        for lm in landmarks:
+            # Tasks API gives normalized coords [0, 1] relative to the crop
             abs_x = lm.x * crop_w + x1
             abs_y = lm.y * crop_h + y1
-            keypoints.append((abs_x, abs_y, lm.visibility))
+            vis = lm.visibility if hasattr(lm, "visibility") else 0.5
+            keypoints.append((abs_x, abs_y, vis))
 
         # Compute overall confidence from visibility of key landmarks
         key_indices = LandmarkIndex.UPPER_BODY + LandmarkIndex.LOWER_BODY
@@ -217,7 +294,7 @@ class PoseEstimator:
         bbox_b: tuple[int, int, int, int],
         frame_index: int = 0,
         timestamp_s: float = 0.0,
-    ) -> tuple[Optional[PoseResult], Optional[PoseResult]]:
+    ) -> tuple[PoseResult | None, PoseResult | None]:
         """Run pose estimation on both fighters in a single frame.
 
         Args:
@@ -240,9 +317,10 @@ class PoseEstimator:
 
     def close(self):
         """Release MediaPipe resources."""
-        if self._pose is not None:
-            self._pose.close()
-            self._pose = None
+        if self._landmarker is not None:
+            self._landmarker.close()
+            self._landmarker = None
 
     def __del__(self):
         self.close()
+
