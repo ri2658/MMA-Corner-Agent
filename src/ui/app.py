@@ -144,32 +144,40 @@ with st.sidebar:
 
         st.divider()
 
-        uploaded = st.file_uploader(
-            "Upload fight clip",
-            type=["mp4", "avi", "mov", "mkv"],
-            help="Upload a video of a fight round",
+        # Single video source selector — no duplication
+        video_source = st.radio(
+            "Video source",
+            ["Bundled clip (Yan vs Dvalishvili)", "Upload your own"],
+            index=0,
         )
 
-        use_bundled = st.checkbox(
-            "Use bundled clip (Yan vs Dvalishvili)",
-            value=True,
-            help="Use the included sample clip",
-        )
+        uploaded = None
+        if video_source == "Upload your own":
+            uploaded = st.file_uploader(
+                "Choose a fight clip",
+                type=["mp4", "avi", "mov", "mkv"],
+            )
 
         if st.button("🎬 Analyze Video", use_container_width=True):
             video_path = None
 
-            if uploaded is not None:
-                tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".mp4")
-                tmp.write(uploaded.read())
-                tmp.close()
-                video_path = tmp.name
-            elif use_bundled:
+            if video_source == "Upload your own":
+                if uploaded is not None:
+                    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".mp4")
+                    tmp.write(uploaded.read())
+                    tmp.close()
+                    video_path = tmp.name
+                else:
+                    st.warning("Please upload a video file first.")
+            else:
                 bundled = Path(__file__).resolve().parent.parent.parent / "data" / "yan_vs_dvalishvili_2_clips.mp4"
-                if bundled.exists():
+                if bundled.exists() and bundled.stat().st_size > 1000:
                     video_path = str(bundled)
                 else:
-                    st.error(f"Bundled clip not found at {bundled}")
+                    st.error(
+                        "Bundled clip not found or is a Git LFS pointer. "
+                        "Run `git lfs pull` in the project root."
+                    )
 
             if video_path:
                 agent = CornerAgent(min_pattern_occurrences=2, max_advice_items=4)
@@ -179,7 +187,7 @@ with st.sidebar:
                 status_text = st.empty()
 
                 def progress_cb(frames, ts):
-                    if frames % 10 == 0:
+                    if frames % 5 == 0:
                         if mf:
                             progress.progress(min(frames / mf, 1.0), text=f"Frame {frames} | t={ts:.1f}s")
                         else:
@@ -208,8 +216,6 @@ with st.sidebar:
                         "Video analysis requires `mediapipe` and `ultralytics` (YOLO). "
                         "Install with: `pip install mediapipe ultralytics`"
                     )
-            else:
-                st.warning("Please upload a video or enable the bundled clip.")
 
     if st.session_state.fight_run:
         st.divider()
@@ -272,6 +278,15 @@ mc5.metric("Critical Alerts", criticals)
 
 # ── Round tabs ────────────────────────────────────────────────────────
 tab_labels = [f"Round {r.round_number}" for r in reports]
+
+# Check if any report has captured key frames
+all_key_frames = []
+for r in reports:
+    all_key_frames.extend(getattr(r, "key_frames", []))
+has_key_frames = len(all_key_frames) > 0
+
+if has_key_frames:
+    tab_labels.append("🎥 Key Frames")
 if len(reports) > 1:
     tab_labels.append("Fight Summary")
 
@@ -411,8 +426,47 @@ for idx in range(len(reports)):
                 st.plotly_chart(fig, width="stretch")
 
 
+# ── Key Frames tab ────────────────────────────────────────────────────
+if has_key_frames:
+    # Key frames tab is right after round tabs
+    kf_tab_idx = len(reports)
+    with tabs[kf_tab_idx]:
+        st.html(C.section_header(
+            "Key Frames",
+            f"{len(all_key_frames)} high-priority frames extracted during analysis",
+            "🎥",
+        ))
+
+        # Render key frames in a 2-column grid
+        for kf_idx in range(0, len(all_key_frames), 2):
+            cols = st.columns(2)
+            for col_idx, col in enumerate(cols):
+                frame_i = kf_idx + col_idx
+                if frame_i >= len(all_key_frames):
+                    break
+
+                kf = all_key_frames[frame_i]
+                with col:
+                    # Convert BGR to RGB for Streamlit display
+                    import cv2
+                    rgb = cv2.cvtColor(kf.image, cv2.COLOR_BGR2RGB)
+                    st.image(rgb, use_container_width=True)
+
+                    # Build caption with action info
+                    parts = [f"**t={kf.timestamp_s:.1f}s** · frame {kf.frame_index}"]
+                    if kf.fighter_a_action:
+                        parts.append(f"🔵 {resolve_name(kf.fighter_a_action)} ({kf.fighter_a_confidence:.0%})")
+                    if kf.fighter_b_action:
+                        parts.append(f"🔴 {resolve_name(kf.fighter_b_action)} ({kf.fighter_b_confidence:.0%})")
+                    if kf.reason:
+                        parts.append(f"_{kf.reason}_")
+
+                    st.markdown(" · ".join(parts))
+
+
 # ── Fight Summary tab (only if multi-round) ───────────────────────────
 if len(reports) > 1:
+    # Fight summary is always the last tab
     with tabs[-1]:
         st.html(C.section_header(
             "Fight Summary",
@@ -509,3 +563,4 @@ if len(reports) > 1:
                     legend=dict(font=dict(size=10, color="#8888a0"), bgcolor="rgba(0,0,0,0)"),
                 )
                 st.plotly_chart(fig_pie, width="stretch")
+

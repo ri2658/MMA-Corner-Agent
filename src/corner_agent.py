@@ -48,6 +48,9 @@ class RoundReport:
     # Safe actions ("more of this")
     safe_actions: list[str] = field(default_factory=list)
 
+    # Captured key frames for visualization
+    key_frames: list = field(default_factory=list)
+
     def to_dict(self) -> dict:
         return {
             "round_number": self.round_number,
@@ -170,7 +173,9 @@ class CornerAgent:
                 progress_callback(self._frames_processed, ts)
 
         pipeline.close()
-        return self.end_round()
+        report = self.end_round()
+        report.key_frames = getattr(pipeline, "key_frames", [])
+        return report
 
     # ------------------------------------------------------------------
     # Frame-by-frame mode

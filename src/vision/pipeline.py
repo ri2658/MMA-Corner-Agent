@@ -20,6 +20,8 @@ from ..analysis.state_vector import (
 )
 
 
+import cv2
+
 @dataclass
 class FrameResult:
     """Complete analysis result for a single video frame."""
@@ -32,12 +34,28 @@ class FrameResult:
 
 
 @dataclass
+class KeyFrame:
+    """A captured video frame with annotation for display."""
+    frame_index: int
+    timestamp_s: float
+    image: np.ndarray  # BGR image (original resolution)
+    fighter_a_action: Optional[str] = None
+    fighter_b_action: Optional[str] = None
+    fighter_a_confidence: float = 0.0
+    fighter_b_confidence: float = 0.0
+    reason: str = ""  # Why this frame was captured
+    bboxes: list[tuple[int, int, int, int]] = field(default_factory=list)
+
+
+@dataclass
 class PipelineConfig:
     """Configuration for the video processing pipeline."""
 
     # Video processing
     target_fps: float = 15.0           # Process at this FPS (skip frames)
     max_frames: Optional[int] = None   # Stop after this many frames
+    inference_width: int = 640         # Resize to this width for inference (0 or None to disable)
+    capture_key_frames: bool = True     # Capture key action frames
 
     # Fighter tracker
     detector_model: str = "yolov8n.pt"
@@ -100,6 +118,12 @@ class VideoPipeline:
         self._pose_buffer_b: list[PoseResult] = []
         self._max_buffer = self.config.action_window_size * 3
 
+        # Key frame capture tracking
+        self.key_frames: list[KeyFrame] = []
+        self._last_capture_ts: float = -999.0
+        self._capture_cooldown: float = 1.0  # Capture at most once per second
+        self._max_key_frames: int = 20
+
     def process_video(
         self,
         video_path: str,
@@ -115,8 +139,6 @@ class VideoPipeline:
             (CombatState for fighter_a, CombatState for fighter_b) per processed frame.
             Either may be None if the fighter isn't detected in that frame.
         """
-        import cv2
-
         cap = cv2.VideoCapture(video_path)
         if not cap.isOpened():
             raise FileNotFoundError(f"Cannot open video: {video_path}")
@@ -131,14 +153,16 @@ class VideoPipeline:
 
         try:
             while True:
+                # Skip frames to match target FPS using cap.grab() (fast skipping)
+                if frame_idx % frame_skip != 0:
+                    if not cap.grab():
+                        break
+                    frame_idx += 1
+                    continue
+
                 ret, frame = cap.read()
                 if not ret:
                     break
-
-                # Skip frames to match target FPS
-                if frame_idx % frame_skip != 0:
-                    frame_idx += 1
-                    continue
 
                 timestamp = frame_idx / source_fps
 
@@ -149,9 +173,22 @@ class VideoPipeline:
                 ):
                     break
 
-                # Run pipeline on this frame
+                # Resize for faster inference while preserving aspect ratio
+                h, w = frame.shape[:2]
+                inf_w = self.config.inference_width
+                if inf_w and w > inf_w:
+                    scale = inf_w / w
+                    inference_frame = cv2.resize(
+                        frame,
+                        (inf_w, int(h * scale)),
+                        interpolation=cv2.INTER_LINEAR
+                    )
+                else:
+                    inference_frame = frame
+
+                # Run pipeline on this frame, passing original frame for key frame capture
                 state_a, state_b = self.process_frame(
-                    frame, frame_idx, timestamp
+                    inference_frame, frame_idx, timestamp, original_frame=frame
                 )
 
                 yield (state_a, state_b)
@@ -167,13 +204,15 @@ class VideoPipeline:
         frame: np.ndarray,
         frame_index: int,
         timestamp_s: float,
+        original_frame: Optional[np.ndarray] = None,
     ) -> tuple[Optional[CombatState], Optional[CombatState]]:
         """Process a single frame through the full pipeline.
 
         Args:
-            frame: BGR image (H, W, 3).
+            frame: BGR image (H, W, 3) (potentially resized for inference).
             frame_index: Frame number.
             timestamp_s: Timestamp in seconds from round start.
+            original_frame: Original full-resolution BGR frame.
 
         Returns:
             (CombatState for fighter_a, CombatState for fighter_b).
@@ -232,7 +271,140 @@ class VideoPipeline:
             inter_fighter_dist, frame_h, frame.shape[1],
         )
 
+        # Compute scaling between inference frame and original frame
+        if original_frame is not None:
+            orig_w = original_frame.shape[1]
+            inf_w = frame.shape[1]
+            scale = orig_w / inf_w if inf_w > 0 else 1.0
+        else:
+            original_frame = frame
+            scale = 1.0
+
+        # Maybe capture key frame for visualization
+        self._maybe_capture_frame(
+            original_frame, frame_index, timestamp_s,
+            state_a, state_b, fa, fb, scale
+        )
+
         return state_a, state_b
+
+    def _maybe_capture_frame(
+        self,
+        original_frame: np.ndarray,
+        frame_index: int,
+        timestamp_s: float,
+        state_a: Optional[CombatState],
+        state_b: Optional[CombatState],
+        fa: Optional[TrackedFighter],
+        fb: Optional[TrackedFighter],
+        scale: float,
+    ) -> None:
+        """Capture a key frame if a high-confidence action occurred."""
+        if not self.config.capture_key_frames:
+            return
+        if len(self.key_frames) >= self._max_key_frames:
+            return
+        if timestamp_s - self._last_capture_ts < self._capture_cooldown:
+            return
+
+        # Check if either fighter performed a significant action
+        a_act = state_a.action_id if state_a else None
+        b_act = state_b.action_id if state_b else None
+        a_conf = state_a.action_confidence if state_a else 0.0
+        b_conf = state_b.action_confidence if state_b else 0.0
+
+        # Don't capture idle/neutral/simple block poses
+        def is_significant(act, conf):
+            return act and act not in ("idle", "high_block") and conf >= self.config.action_confidence_threshold
+
+        has_a = is_significant(a_act, a_conf)
+        has_b = is_significant(b_act, b_conf)
+
+        if not (has_a or has_b):
+            return
+
+        # Make copy of original frame to draw annotation overlays
+        annotated = original_frame.copy()
+        h, w = annotated.shape[:2]
+
+        bboxes = []
+
+        # Helper to format action names cleanly
+        def clean_name(name):
+            return name.replace("_", " ").title() if name else "Idle"
+
+        # Draw Fighter A (Blue-ish)
+        if fa and fa.bbox:
+            x1, y1, x2, y2 = [int(coord * scale) for coord in fa.bbox]
+            x1, y1 = max(0, x1), max(0, y1)
+            x2, y2 = min(w, x2), min(h, y2)
+            bboxes.append((x1, y1, x2, y2))
+            cv2.rectangle(annotated, (x1, y1), (x2, y2), (225, 153, 66), 2)
+            label = f"A: {clean_name(a_act)} ({a_conf:.0%})"
+            cv2.putText(
+                annotated,
+                label,
+                (x1, max(y1 - 10, 20)),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.6,
+                (225, 153, 66),
+                2,
+                cv2.LINE_AA,
+            )
+
+        # Draw Fighter B (Red-ish)
+        if fb and fb.bbox:
+            x1, y1, x2, y2 = [int(coord * scale) for coord in fb.bbox]
+            x1, y1 = max(0, x1), max(0, y1)
+            x2, y2 = min(w, x2), min(h, y2)
+            bboxes.append((x1, y1, x2, y2))
+            cv2.rectangle(annotated, (x1, y1), (x2, y2), (66, 62, 225), 2)
+            label = f"B: {clean_name(b_act)} ({b_conf:.0%})"
+            cv2.putText(
+                annotated,
+                label,
+                (x1, max(y1 - 10, 20)),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.6,
+                (66, 62, 225),
+                2,
+                cv2.LINE_AA,
+            )
+
+        # Global time overlay
+        time_text = f"Round Time: {timestamp_s:.1f}s | Frame: {frame_index}"
+        cv2.putText(
+            annotated,
+            time_text,
+            (15, h - 20),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.5,
+            (255, 255, 255),
+            1,
+            cv2.LINE_AA,
+        )
+
+        reason = ""
+        if has_a and has_b:
+            reason = f"Exchange: A({clean_name(a_act)}) & B({clean_name(b_act)})"
+        elif has_a:
+            reason = f"A Threw: {clean_name(a_act)}"
+        else:
+            reason = f"B Threw: {clean_name(b_act)}"
+
+        kf = KeyFrame(
+            frame_index=frame_index,
+            timestamp_s=timestamp_s,
+            image=annotated,
+            fighter_a_action=a_act,
+            fighter_b_action=b_act,
+            fighter_a_confidence=a_conf,
+            fighter_b_confidence=b_conf,
+            reason=reason,
+            bboxes=bboxes,
+        )
+        self.key_frames.append(kf)
+        self._last_capture_ts = timestamp_s
 
     def _build_combat_state(
         self,
