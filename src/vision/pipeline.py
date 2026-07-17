@@ -294,7 +294,7 @@ class VideoPipeline:
         hip_mid_y = (l_hip[1] + r_hip[1]) / 2
 
         # Check if hips are very low (ground position)
-        body_h = pose.to_numpy()[:, 1].ptp()
+        body_h = np.ptp(pose.to_numpy()[:, 1])
         if body_h > 0 and (hip_mid_y - pose.get_point_2d(LM.NOSE)[1]) / body_h < 0.15:
             return Stance.GROUND
 
