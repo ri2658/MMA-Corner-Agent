@@ -83,7 +83,7 @@ with st.sidebar:
 
     mode = st.radio(
         "Analysis Mode",
-        ["Synthetic Simulation", "Video Analysis"],
+        ["Synthetic Simulation", "Video Analysis (Under Development ⚠️)"],
         index=0,
         help="Synthetic works instantly. Video requires MediaPipe + YOLO.",
     )
@@ -147,7 +147,7 @@ with st.sidebar:
         # Single video source selector — no duplication
         video_source = st.radio(
             "Video source",
-            ["Bundled clip (Yan vs Dvalishvili)", "Upload your own"],
+            ["Bundled clip (Yan vs. Dvalishvili 2)", "Upload your own"],
             index=0,
         )
 
