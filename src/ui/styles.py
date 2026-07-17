@@ -404,7 +404,7 @@ def get_styles() -> str:
     /* ───────────────────────────────────────────────────────────
        Streamlit Widget Overrides
     ─────────────────────────────────────────────────────────── */
-    .stButton > button {
+    div[data-testid="stButton"] > button {
         background: linear-gradient(135deg, var(--accent-red) 0%, #c53030 100%) !important;
         color: white !important;
         border: none !important;
@@ -417,7 +417,7 @@ def get_styles() -> str:
         box-shadow: 0 4px 15px rgba(229, 62, 62, 0.3) !important;
     }
 
-    .stButton > button:hover {
+    div[data-testid="stButton"] > button:hover {
         transform: translateY(-2px) !important;
         box-shadow: 0 6px 25px rgba(229, 62, 62, 0.5) !important;
     }
