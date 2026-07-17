@@ -67,9 +67,13 @@ def get_styles() -> str:
         padding-top: 2rem !important;
     }
 
-    /* Hide default Streamlit branding */
-    #MainMenu, footer, header[data-testid="stHeader"] {
+    /* Hide default Streamlit branding but KEEP the header so the sidebar toggle is visible! */
+    #MainMenu, footer, [data-testid="stToolbar"] {
         visibility: hidden !important;
+    }
+    header[data-testid="stHeader"] {
+        background: transparent !important;
+        box-shadow: none !important;
     }
 
     /* ───────────────────────────────────────────────────────────
