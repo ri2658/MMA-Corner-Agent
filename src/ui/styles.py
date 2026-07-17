@@ -66,14 +66,17 @@ def get_styles() -> str:
         max-width: 1200px !important;
         padding-top: 2rem !important;
     }
-
-    /* Hide default Streamlit branding but KEEP the header so the sidebar toggle is visible! */
-    #MainMenu, footer, [data-testid="stToolbar"] {
+    /* Hide default Streamlit branding safely */
+    #MainMenu, footer {
         visibility: hidden !important;
     }
-    header[data-testid="stHeader"] {
-        background: transparent !important;
-        box-shadow: none !important;
+    
+    /* Guarantee the sidebar expand button is ALWAYS visible */
+    [data-testid="collapsedControl"] {
+        visibility: visible !important;
+        opacity: 1 !important;
+        display: flex !important;
+        z-index: 999999 !important;
     }
 
     /* ───────────────────────────────────────────────────────────

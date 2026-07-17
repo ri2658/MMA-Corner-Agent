@@ -39,6 +39,17 @@ st.set_page_config(
 # Inject custom CSS via st.html (reliable)
 st.html(get_styles())
 
+# Force sidebar to expand by clearing localStorage cache if it got stuck
+st.html("""
+<script>
+    if (window.parent !== window) {
+        window.parent.localStorage.removeItem("stSidebarIsCollapsed");
+    } else {
+        window.localStorage.removeItem("stSidebarIsCollapsed");
+    }
+</script>
+""")
+
 
 # ======================================================================
 # Session state
