@@ -88,6 +88,10 @@ pytest
 - [ ] Corner coach UI
 - [ ] Real-time video processing
 
+## Disclaimer
+
+This project is FULLY vibe-coded; it was created as a fun summer side-project.
+
 ## License
 
 MIT
