@@ -163,15 +163,47 @@ class FighterTracker:
 
         self._detector = YOLO(self.detector_model)
 
+    def _is_referee_or_official(
+        self, frame: np.ndarray, bbox: tuple[int, int, int, int]
+    ) -> bool:
+        """Detect if a detection is a referee or official based on low torso HSV saturation.
+
+        Referees typically wear black, grey, or black/white shirts, which have
+        extremely low color saturation compared to fighters' skin tone or colored shorts.
+        """
+        import cv2
+
+        x1, y1, x2, y2 = bbox
+        h, w = frame.shape[:2]
+        x1, y1 = max(0, x1), max(0, y1)
+        x2, y2 = min(w, x2), min(h, y2)
+
+        # Torso area is roughly the upper-middle vertical segment
+        box_h = y2 - y1
+        torso_y1 = y1 + box_h // 5
+        torso_y2 = y1 + box_h // 2
+
+        crop = frame[torso_y1:torso_y2, x1:x2]
+        if crop.size == 0:
+            return False
+
+        hsv = cv2.cvtColor(crop, cv2.COLOR_BGR2HSV)
+        # Average Saturation (S channel is index 1)
+        mean_s = np.mean(hsv[:, :, 1])
+
+        # Dark shirts/stripes have saturation typically < 25.
+        # Skin tones have saturation > 35.
+        if mean_s < 25:
+            return True
+        return False
+
     def _detect_persons(
         self, frame: np.ndarray
     ) -> list[tuple[tuple[int, int, int, int], float]]:
-        """Detect all persons in a frame using YOLO.
+        """Detect all persons in a frame using YOLO, filtering out referees/officials.
 
         Returns:
-            List of ((x1, y1, x2, y2), confidence) tuples, sorted by
-            bounding box area descending (largest first — likely the fighters,
-            not background spectators).
+            List of ((x1, y1, x2, y2), confidence) tuples, sorted by area descending.
         """
         if self._detector is None:
             self._init_detector()
@@ -185,15 +217,19 @@ class FighterTracker:
                 conf = float(box.conf[0])
                 if cls == self.person_class_id and conf >= self.min_detection_confidence:
                     x1, y1, x2, y2 = box.xyxy[0].tolist()
-                    detections.append(
-                        ((int(x1), int(y1), int(x2), int(y2)), conf)
-                    )
+                    bbox = (int(x1), int(y1), int(x2), int(y2))
+
+                    # Filter out referee/officials based on torso clothing colors
+                    if self._is_referee_or_official(frame, bbox):
+                        continue
+
+                    detections.append((bbox, conf))
 
         # Sort by area descending — fighters are typically the largest persons
         detections.sort(key=lambda d: (d[0][2] - d[0][0]) * (d[0][3] - d[0][1]), reverse=True)
 
-        # Keep only the top 2 (the two fighters)
-        return detections[:2]
+        # Keep up to 5 detections for track association
+        return detections[:5]
 
     def update(
         self,
@@ -240,12 +276,14 @@ class FighterTracker:
             # Need both fighters to initialize
             return []
 
-        # Sort by x-center: left = fighter_a, right = fighter_b
+        # Sort by x-center: leftmost is fighter_a, rightmost is fighter_b
         sorted_dets = sorted(detections, key=lambda d: (d[0][0] + d[0][2]) / 2)
 
-        for i, (fighter_id, (bbox, conf)) in enumerate(
-            zip(["fighter_a", "fighter_b"], sorted_dets)
-        ):
+        # Initialize fighter_a (leftmost) and fighter_b (rightmost)
+        # This naturally skips the referee if they are standing in the middle
+        targets = [("fighter_a", sorted_dets[0]), ("fighter_b", sorted_dets[-1])]
+
+        for fighter_id, (bbox, conf) in targets:
             hist = _compute_color_histogram(frame, bbox, self.histogram_bins)
             self._fighters[fighter_id] = TrackedFighter(
                 fighter_id=fighter_id,
