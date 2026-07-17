@@ -444,6 +444,17 @@ def get_styles() -> str:
         transform: none !important;
     }
 
+    /* Hide native file input fully to avoid browser-default text overlapping custom UI text */
+    [data-testid="stFileUploader"] input[type="file"] {
+        display: none !important;
+        opacity: 0 !important;
+        width: 0 !important;
+        height: 0 !important;
+        position: absolute !important;
+        overflow: hidden !important;
+        pointer-events: none !important;
+    }
+
     .stSlider [data-baseweb="slider"] {
         margin-top: 0.5rem;
     }
