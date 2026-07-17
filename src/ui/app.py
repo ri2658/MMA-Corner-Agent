@@ -3,9 +3,8 @@
 Launch with:
     streamlit run src/ui/app.py
 
-Supports two modes:
-  1. Synthetic simulation — instant, no dependencies
-  2. Video analysis — upload a fight clip for real analysis
+Uses st.html() for all custom HTML rendering (reliable in Streamlit 1.59+)
+and native Streamlit widgets (st.metric, st.tabs, etc.) for everything else.
 """
 
 from __future__ import annotations
@@ -37,8 +36,8 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# Inject custom CSS
-st.markdown(get_styles(), unsafe_allow_html=True)
+# Inject custom CSS via st.html (reliable)
+st.html(get_styles())
 
 
 # ======================================================================
@@ -66,7 +65,7 @@ def resolve_name(action_id: str) -> str:
 # Sidebar
 # ======================================================================
 with st.sidebar:
-    st.markdown("""
+    st.html("""
     <div style="padding: 0.5rem 0 1rem 0;">
         <div style="font-size: 1.4rem; font-weight: 800; letter-spacing: -0.03em;
                     background: linear-gradient(135deg, #fff 0%, #e53e3e 100%);
@@ -78,7 +77,7 @@ with st.sidebar:
             Tactical fight analysis
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
     st.divider()
 
@@ -109,7 +108,7 @@ with st.sidebar:
 
         st.divider()
 
-        if st.button("⚡ Run Fight Simulation", width="stretch"):
+        if st.button("⚡ Run Fight Simulation", use_container_width=True):
             agent = CornerAgent(min_pattern_occurrences=2, max_advice_items=4)
             sim = SyntheticFight(seed=int(seed))
             reports = []
@@ -145,25 +144,22 @@ with st.sidebar:
 
         st.divider()
 
-        # File upload
         uploaded = st.file_uploader(
             "Upload fight clip",
             type=["mp4", "avi", "mov", "mkv"],
             help="Upload a video of a fight round",
         )
 
-        # Or use the bundled clip
         use_bundled = st.checkbox(
             "Use bundled clip (Yan vs Dvalishvili)",
             value=True,
             help="Use the included sample clip",
         )
 
-        if st.button("🎬 Analyze Video", width="stretch"):
+        if st.button("🎬 Analyze Video", use_container_width=True):
             video_path = None
 
             if uploaded is not None:
-                # Save uploaded file to temp
                 tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".mp4")
                 tmp.write(uploaded.read())
                 tmp.close()
@@ -184,7 +180,6 @@ with st.sidebar:
 
                 def progress_cb(frames, ts):
                     if frames % 10 == 0:
-                        # Update progress based on frame count
                         if mf:
                             progress.progress(min(frames / mf, 1.0), text=f"Frame {frames} | t={ts:.1f}s")
                         else:
@@ -221,7 +216,7 @@ with st.sidebar:
         st.success(f"✓ {len(st.session_state.reports)} round(s) analyzed")
 
     st.divider()
-    st.markdown("""
+    st.html("""
     <div style="font-size: 0.72rem; color: #555570; line-height: 1.6; font-family: Inter, sans-serif;">
         <strong>How it works:</strong><br>
         1. Detect fighter actions via pose estimation<br>
@@ -229,16 +224,16 @@ with st.sidebar:
         3. Rank counter patterns by frequency &times; damage<br>
         4. Look up tactical adjustments from the knowledge base
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
 
 # ======================================================================
 # Main content
 # ======================================================================
-st.markdown(C.header_banner(), unsafe_allow_html=True)
+st.html(C.header_banner())
 
 if not st.session_state.fight_run:
-    st.markdown(f"""
+    st.html(f"""
     <div style="
         background: {C._BG_CARD}; border: 1px solid {C._BORDER};
         border-radius: 16px; text-align: center; padding: 3rem 2rem;
@@ -252,7 +247,7 @@ if not st.session_state.fight_run:
             <strong>Video Analysis</strong> to process a real fight clip.
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """)
     st.stop()
 
 
@@ -262,22 +257,18 @@ if not st.session_state.fight_run:
 reports: list[RoundReport] = st.session_state.reports
 agent: CornerAgent = st.session_state.agent
 
-# ── Overview stat pills ───────────────────────────────────────────────
+# ── Overview stats (native Streamlit metrics) ─────────────────────────
 total_pairs = sum(r.pairs_detected for r in reports)
 total_a = sum(sum(r.fighter_a_actions.values()) for r in reports)
 total_b = sum(sum(r.fighter_b_actions.values()) for r in reports)
 criticals = sum(1 for r in reports for a in r.advice if a.severity == "critical")
 
-st.markdown(
-    C.stat_pills([
-        (str(len(reports)), "Rounds"),
-        (str(total_pairs), "Pairs Detected"),
-        (str(total_a), "Your Actions"),
-        (str(total_b), "Opp. Counters"),
-        (str(criticals), "Critical Alerts"),
-    ]),
-    unsafe_allow_html=True,
-)
+mc1, mc2, mc3, mc4, mc5 = st.columns(5)
+mc1.metric("Rounds", len(reports))
+mc2.metric("Pairs Detected", total_pairs)
+mc3.metric("Your Actions", total_a)
+mc4.metric("Opp. Counters", total_b)
+mc5.metric("Critical Alerts", criticals)
 
 # ── Round tabs ────────────────────────────────────────────────────────
 tab_labels = [f"Round {r.round_number}" for r in reports]
@@ -298,103 +289,83 @@ for idx in range(len(reports)):
         c3.metric("Your Actions", sum(report.fighter_a_actions.values()))
         c4.metric("Counters Received", sum(report.fighter_b_actions.values()))
 
-        st.markdown(C.divider(), unsafe_allow_html=True)
+        st.divider()
 
         # ── Two-column layout ─────────────────────────────────────
         left, right = st.columns([3, 2])
 
         # ── Left: Corner Advice + Safe Actions ────────────────────
         with left:
-            st.markdown(
-                C.section_header("Corner Advice", "Prioritized adjustments based on detected counter patterns", "🎯"),
-                unsafe_allow_html=True,
-            )
+            st.html(C.section_header(
+                "Corner Advice",
+                "Prioritized adjustments based on detected counter patterns",
+                "🎯",
+            ))
 
             if report.advice:
                 for i, adv in enumerate(report.advice):
                     d = adv.to_display_dict()
-                    st.markdown(
-                        C.advice_card(
-                            severity=adv.severity,
-                            headline=d["headline"],
-                            stats_text=d["stats"],
-                            adjustment=d["adjustment"],
-                            icon=d["icon"],
-                            index=i,
-                        ),
-                        unsafe_allow_html=True,
-                    )
+                    st.html(C.advice_card(
+                        severity=adv.severity,
+                        headline=d["headline"],
+                        stats_text=d["stats"],
+                        adjustment=d["adjustment"],
+                        icon=d["icon"],
+                        index=i,
+                    ))
             else:
-                st.markdown(
-                    C.glass_card_wrapper(
-                        f'<div style="text-align: center; color: {C._TEXT_MUTED}; padding: 1rem; font-family: Inter, sans-serif;">'
-                        '&#10003; No significant counter patterns &mdash; fighter is performing well</div>'
-                    ),
-                    unsafe_allow_html=True,
-                )
+                st.info("✓ No significant counter patterns — fighter is performing well")
 
             # Safe actions
             if report.safe_actions:
-                st.markdown(
-                    C.section_header("Keep Doing This", "Actions not being effectively countered", "✅"),
-                    unsafe_allow_html=True,
-                )
-                st.markdown(
-                    C.glass_card_wrapper(
-                        C.safe_actions_chips([resolve_name(a) for a in report.safe_actions])
-                    ),
-                    unsafe_allow_html=True,
-                )
+                st.html(C.section_header(
+                    "Keep Doing This",
+                    "Actions not being effectively countered",
+                    "✅",
+                ))
+                st.html(C.glass_card_wrapper(
+                    C.safe_actions_chips([resolve_name(a) for a in report.safe_actions])
+                ))
 
         # ── Right: Action Breakdown ───────────────────────────────
         with right:
-            st.markdown(
-                C.section_header("Action Breakdown", "Strike output per fighter", "📊"),
-                unsafe_allow_html=True,
-            )
+            st.html(C.section_header(
+                "Action Breakdown",
+                "Strike output per fighter",
+                "📊",
+            ))
 
             all_counts = list(report.fighter_a_actions.values()) + list(report.fighter_b_actions.values())
             max_count = max(all_counts) if all_counts else 1
 
             # Your fighter
-            st.markdown(
-                f'<div style="font-size: 0.78rem; font-weight: 600; color: {C._BLUE}; margin-bottom: 6px; font-family: Inter, sans-serif;">YOUR FIGHTER</div>',
-                unsafe_allow_html=True,
-            )
-            st.markdown(
-                C.glass_card_wrapper(
-                    C.action_bar_chart(
-                        report.fighter_a_actions, max_count,
-                        "linear-gradient(90deg, #4299e1, #63b3ed)",
-                        resolve_name,
-                    )
-                ),
-                unsafe_allow_html=True,
-            )
+            st.html(f'<div style="font-size: 0.78rem; font-weight: 600; color: {C._BLUE}; margin-bottom: 6px; font-family: Inter, sans-serif;">YOUR FIGHTER</div>')
+            st.html(C.glass_card_wrapper(
+                C.action_bar_chart(
+                    report.fighter_a_actions, max_count,
+                    "linear-gradient(90deg, #4299e1, #63b3ed)",
+                    resolve_name,
+                )
+            ))
 
             # Opponent
-            st.markdown(
-                f'<div style="font-size: 0.78rem; font-weight: 600; color: {C._RED}; margin-bottom: 6px; font-family: Inter, sans-serif;">OPPONENT</div>',
-                unsafe_allow_html=True,
-            )
-            st.markdown(
-                C.glass_card_wrapper(
-                    C.action_bar_chart(
-                        report.fighter_b_actions, max_count,
-                        "linear-gradient(90deg, #e53e3e, #fc8181)",
-                        resolve_name,
-                    )
-                ),
-                unsafe_allow_html=True,
-            )
+            st.html(f'<div style="font-size: 0.78rem; font-weight: 600; color: {C._RED}; margin-bottom: 6px; font-family: Inter, sans-serif;">OPPONENT</div>')
+            st.html(C.glass_card_wrapper(
+                C.action_bar_chart(
+                    report.fighter_b_actions, max_count,
+                    "linear-gradient(90deg, #e53e3e, #fc8181)",
+                    resolve_name,
+                )
+            ))
 
-        st.markdown(C.divider(), unsafe_allow_html=True)
+        st.divider()
 
         # ── Counter Pattern Detail ────────────────────────────────
-        st.markdown(
-            C.section_header("Counter Pattern Detail", "All detected action → counter pairs ranked by threat", "🔍"),
-            unsafe_allow_html=True,
-        )
+        st.html(C.section_header(
+            "Counter Pattern Detail",
+            "All detected action → counter pairs ranked by threat",
+            "🔍",
+        ))
 
         patterns = [p.to_dict() for p in report.top_patterns]
         max_threat = max((p.get("threat_score", 0) for p in patterns), default=1)
@@ -402,12 +373,9 @@ for idx in range(len(reports)):
         col_table, col_chart = st.columns([1, 1])
 
         with col_table:
-            st.markdown(
-                C.glass_card_wrapper(
-                    C.threat_pattern_rows(patterns, max_threat, resolve_name)
-                ),
-                unsafe_allow_html=True,
-            )
+            st.html(C.glass_card_wrapper(
+                C.threat_pattern_rows(patterns, max_threat, resolve_name)
+            ))
 
         with col_chart:
             if patterns:
@@ -446,10 +414,11 @@ for idx in range(len(reports)):
 # ── Fight Summary tab (only if multi-round) ───────────────────────────
 if len(reports) > 1:
     with tabs[-1]:
-        st.markdown(
-            C.section_header("Fight Summary", f"Accumulated analysis across {len(reports)} rounds", "📈"),
-            unsafe_allow_html=True,
-        )
+        st.html(C.section_header(
+            "Fight Summary",
+            f"Accumulated analysis across {len(reports)} rounds",
+            "📈",
+        ))
 
         fight_patterns = agent.get_fight_patterns()
         fight_advice = agent.get_fight_advice()
@@ -457,27 +426,30 @@ if len(reports) > 1:
         left_s, right_s = st.columns([3, 2])
 
         with left_s:
-            st.markdown(
-                C.section_header("Top Threats Across Fight", "Patterns that persisted across multiple rounds", "⚠️"),
-                unsafe_allow_html=True,
-            )
+            st.html(C.section_header(
+                "Top Threats Across Fight",
+                "Patterns that persisted across multiple rounds",
+                "⚠️",
+            ))
             if fight_patterns:
                 fp = [p.to_dict() for p in fight_patterns]
                 mt = max(p["threat_score"] for p in fp)
-                st.markdown(C.glass_card_wrapper(C.threat_pattern_rows(fp, mt, resolve_name)), unsafe_allow_html=True)
+                st.html(C.glass_card_wrapper(
+                    C.threat_pattern_rows(fp, mt, resolve_name)
+                ))
 
-            st.markdown(C.section_header("Fight-Level Adjustments", "", "🎯"), unsafe_allow_html=True)
+            st.html(C.section_header("Fight-Level Adjustments", "", "🎯"))
             if fight_advice:
                 for i, adv in enumerate(fight_advice):
                     d = adv.to_display_dict()
-                    st.markdown(
-                        C.advice_card(adv.severity, d["headline"], d["stats"], d["adjustment"], d["icon"], i),
-                        unsafe_allow_html=True,
-                    )
+                    st.html(C.advice_card(
+                        adv.severity, d["headline"], d["stats"],
+                        d["adjustment"], d["icon"], i,
+                    ))
 
         with right_s:
             # Round trend chart
-            st.markdown(C.section_header("Round Trend", "How threats evolved", "📉"), unsafe_allow_html=True)
+            st.html(C.section_header("Round Trend", "How threats evolved", "📉"))
 
             rounds_x = [f"R{r.round_number}" for r in reports]
             fig_t = go.Figure()
@@ -509,7 +481,7 @@ if len(reports) > 1:
             st.plotly_chart(fig_t, width="stretch")
 
             # Action distribution donut
-            st.markdown(C.section_header("Your Action Distribution", "Across entire fight", "🎯"), unsafe_allow_html=True)
+            st.html(C.section_header("Your Action Distribution", "Across entire fight", "🎯"))
 
             all_a: dict[str, int] = {}
             for r in reports:
