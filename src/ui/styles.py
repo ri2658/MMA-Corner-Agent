@@ -424,6 +424,14 @@ def get_styles() -> str:
 
 
 
+    /* Fix for overlapping text in st.file_uploader by hiding native input text visually */
+    [data-testid="stFileUploader"] input[type="file"] {
+        color: transparent !important;
+    }
+    [data-testid="stFileUploader"] input[type="file"]::file-selector-button {
+        display: none !important;
+    }
+
     .stSlider [data-baseweb="slider"] {
         margin-top: 0.5rem;
     }
