@@ -422,6 +422,28 @@ def get_styles() -> str:
         box-shadow: 0 6px 25px rgba(229, 62, 62, 0.5) !important;
     }
 
+    /* Reset style leaks into st.file_uploader dropzone buttons */
+    [data-testid="stFileUploader"] button {
+        background: rgba(255, 255, 255, 0.05) !important;
+        color: var(--text-primary) !important;
+        border: 1px solid var(--border-subtle) !important;
+        border-radius: var(--radius-sm) !important;
+        padding: 5px 12px !important;
+        font-size: 0.8rem !important;
+        box-shadow: none !important;
+        transform: none !important;
+        transition: background-color 0.2s ease !important;
+        height: auto !important;
+        width: auto !important;
+        min-height: 0 !important;
+    }
+
+    [data-testid="stFileUploader"] button:hover {
+        background: rgba(255, 255, 255, 0.1) !important;
+        box-shadow: none !important;
+        transform: none !important;
+    }
+
     .stSlider [data-baseweb="slider"] {
         margin-top: 0.5rem;
     }
