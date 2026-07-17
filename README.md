@@ -59,6 +59,8 @@ MMA-Corner-Agent/
 
 ## Quick Start
 
+To clone this repository, run
+
 ```bash
 # Clone
 git clone https://github.com/ri2658/MMA-Corner-Agent.git
@@ -69,6 +71,12 @@ pip install -e ".[dev]"
 
 # Run tests
 pytest
+```
+
+Then, to boot up the website locally, run
+
+```bash
+streamlit run src/ui/app.py
 ```
 
 ## Status

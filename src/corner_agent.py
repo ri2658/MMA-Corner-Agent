@@ -259,10 +259,14 @@ class CornerAgent:
         Returns:
             RoundReport with all analysis results.
         """
+        # Smooth the combat state sequences to group frame-level predictions into distinct events
+        smoothed_a = self._smooth_states(self._states_a)
+        smoothed_b = self._smooth_states(self._states_b)
+
         # Step 1: Link action→counter pairs
         pairs = self.pair_linker.link(
-            self._states_a,
-            self._states_b,
+            smoothed_a,
+            smoothed_b,
             round_number=self._current_round,
         )
 
@@ -285,8 +289,8 @@ class CornerAgent:
         safe_actions = self.aggregator.get_safe_actions()
 
         # Step 5: Count actions per fighter
-        a_actions = self._count_actions(self._states_a)
-        b_actions = self._count_actions(self._states_b)
+        a_actions = self._count_actions(smoothed_a)
+        b_actions = self._count_actions(smoothed_b)
 
         # Step 6: Compute duration
         timestamps = [s.timestamp_s for s in self._states_a + self._states_b]
@@ -458,3 +462,82 @@ class CornerAgent:
         # Remove idle/None from the counts
         counts.pop("idle", None)
         return counts
+
+    @staticmethod
+    def _smooth_states(
+        states: list[CombatState],
+        min_event_duration_s: float = 0.25,
+        max_gap_to_merge_s: float = 0.6,
+    ) -> list[CombatState]:
+        """Smooth a sequence of CombatStates to remove frame-level jitter/flutter.
+
+        Fills in brief gaps in contiguous actions and filters out short transient
+        action spikes (noise). Returns a new copy of the state sequence.
+        """
+        if not states:
+            return []
+
+        # Estimate average FPS from timestamps
+        if len(states) >= 2:
+            time_gaps = [
+                states[i].timestamp_s - states[i - 1].timestamp_s
+                for i in range(1, min(100, len(states)))
+            ]
+            mean_gap = sum(time_gaps) / len(time_gaps)
+            fps = 1.0 / mean_gap if mean_gap > 0 else 15.0
+        else:
+            fps = 15.0
+
+        min_frames = max(1, int(min_event_duration_s * fps))
+        gap_frames = max(1, int(max_gap_to_merge_s * fps))
+
+        import copy
+        smoothed = [copy.copy(s) for s in states]
+
+        # Step 1: Fill short gaps in contiguous actions
+        i = 0
+        while i < len(smoothed):
+            act = smoothed[i].action_id
+            if not act or act == "idle":
+                i += 1
+                continue
+
+            # Look ahead for the next occurrence of the same action
+            next_occ_idx = -1
+            for j in range(i + 1, min(i + gap_frames + 2, len(smoothed))):
+                if smoothed[j].action_id == act:
+                    next_occ_idx = j
+                    break
+
+            if next_occ_idx != -1:
+                # Fill the gap with the action
+                for k in range(i + 1, next_occ_idx):
+                    smoothed[k].action_id = act
+                    smoothed[k].action_confidence = max(
+                        smoothed[k].action_confidence,
+                        smoothed[i].action_confidence,
+                        smoothed[next_occ_idx].action_confidence,
+                    )
+                i = next_occ_idx
+            else:
+                i += 1
+
+        # Step 2: Remove short transient spikes (less than min_frames duration)
+        i = 0
+        while i < len(smoothed):
+            act = smoothed[i].action_id
+            if not act or act == "idle":
+                i += 1
+                continue
+
+            start_idx = i
+            while i < len(smoothed) and smoothed[i].action_id == act:
+                i += 1
+            duration_frames = i - start_idx
+
+            if duration_frames < min_frames:
+                for k in range(start_idx, i):
+                    smoothed[k].action_id = None
+                    smoothed[k].action_confidence = 0.0
+
+        return smoothed

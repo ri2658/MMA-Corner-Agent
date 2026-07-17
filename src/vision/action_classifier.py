@@ -63,11 +63,13 @@ def _velocity(
     poses: list[PoseResult],
     landmark_idx: int,
     trailing_frames: int = 4,
+    reference_indices: Optional[list[int]] = None,
 ) -> tuple[float, float]:
-    """Compute average velocity of a landmark over the trailing frames.
+    """Compute average velocity of a landmark over trailing frames.
 
-    Uses only the last ``trailing_frames`` poses to avoid dilution
-    from idle frames at the start of the window.
+    If reference_indices is provided, computes velocity relative to the average
+    position of those reference joints (e.g. shoulder/hip midpoints) to cancel
+    out bounding box jitter or camera translation.
 
     Returns (vx, vy) in pixels per second.
     """
@@ -77,9 +79,17 @@ def _velocity(
     # Use only the trailing segment
     segment = poses[-trailing_frames:] if len(poses) >= trailing_frames else poses
 
-    first = segment[0].get_point_2d(landmark_idx)
-    last = segment[-1].get_point_2d(landmark_idx)
-    dt = last_ts = segment[-1].timestamp_s - segment[0].timestamp_s
+    def get_point(pose):
+        pt = np.array(pose.get_point_2d(landmark_idx))
+        if reference_indices:
+            ref_pts = [np.array(pose.get_point_2d(idx)) for idx in reference_indices]
+            ref_mid = np.mean(ref_pts, axis=0)
+            return pt - ref_mid
+        return pt
+
+    first = get_point(segment[0])
+    last = get_point(segment[-1])
+    dt = segment[-1].timestamp_s - segment[0].timestamp_s
 
     if dt < 1e-6:
         return (0.0, 0.0)
@@ -182,8 +192,8 @@ class RuleBasedClassifier:
         self, window: list[PoseResult], body_h: float
     ) -> Optional[tuple[str, float]]:
         """Detect a jab: lead hand extends rapidly forward."""
-        # Lead wrist velocity
-        v = _velocity(window, LM.LEFT_WRIST)
+        # Lead wrist velocity (relative to shoulders)
+        v = _velocity(window, LM.LEFT_WRIST, reference_indices=[LM.LEFT_SHOULDER, LM.RIGHT_SHOULDER])
         speed = np.sqrt(v[0] ** 2 + v[1] ** 2) / body_h
 
         # Lead arm extension
@@ -206,7 +216,8 @@ class RuleBasedClassifier:
         self, window: list[PoseResult], body_h: float
     ) -> Optional[tuple[str, float]]:
         """Detect a cross: rear hand extends rapidly with hip rotation."""
-        v = _velocity(window, LM.RIGHT_WRIST)
+        # Rear wrist velocity (relative to shoulders)
+        v = _velocity(window, LM.RIGHT_WRIST, reference_indices=[LM.LEFT_SHOULDER, LM.RIGHT_SHOULDER])
         speed = np.sqrt(v[0] ** 2 + v[1] ** 2) / body_h
 
         last = window[-1]
@@ -242,7 +253,7 @@ class RuleBasedClassifier:
         self, window: list[PoseResult], body_h: float
     ) -> Optional[tuple[str, float]]:
         """Detect a lead hook: lead hand moves laterally with bent elbow."""
-        v = _velocity(window, LM.LEFT_WRIST)
+        v = _velocity(window, LM.LEFT_WRIST, reference_indices=[LM.LEFT_SHOULDER, LM.RIGHT_SHOULDER])
         speed = np.sqrt(v[0] ** 2 + v[1] ** 2) / body_h
 
         last = window[-1]
@@ -268,7 +279,7 @@ class RuleBasedClassifier:
             (LM.LEFT_WRIST, "lead_uppercut"),
             (LM.RIGHT_WRIST, "rear_uppercut"),
         ]:
-            v = _velocity(window, wrist_idx)
+            v = _velocity(window, wrist_idx, reference_indices=[LM.LEFT_SHOULDER, LM.RIGHT_SHOULDER])
             vertical_speed = -v[1] / body_h  # Negative y = upward
 
             if vertical_speed > self.FAST_HAND_VELOCITY * 0.8:
@@ -300,7 +311,7 @@ class RuleBasedClassifier:
             (LM.LEFT_ANKLE, "lead_head_kick"),
             (LM.RIGHT_ANKLE, "rear_head_kick"),
         ]:
-            v = _velocity(window, ankle_idx)
+            v = _velocity(window, ankle_idx, reference_indices=[LM.LEFT_HIP, LM.RIGHT_HIP])
             speed = np.sqrt(v[0] ** 2 + v[1] ** 2) / body_h
 
             if speed > self.FAST_FOOT_VELOCITY:
@@ -327,7 +338,7 @@ class RuleBasedClassifier:
             (LM.LEFT_ANKLE, "lead_body_kick"),
             (LM.RIGHT_ANKLE, "rear_body_kick"),
         ]:
-            v = _velocity(window, ankle_idx)
+            v = _velocity(window, ankle_idx, reference_indices=[LM.LEFT_HIP, LM.RIGHT_HIP])
             speed = np.sqrt(v[0] ** 2 + v[1] ** 2) / body_h
 
             if speed > self.FAST_FOOT_VELOCITY * 0.8:
@@ -357,7 +368,7 @@ class RuleBasedClassifier:
             (LM.LEFT_ANKLE, "lead_calf_kick"),
             (LM.RIGHT_ANKLE, "rear_leg_kick"),
         ]:
-            v = _velocity(window, ankle_idx)
+            v = _velocity(window, ankle_idx, reference_indices=[LM.LEFT_HIP, LM.RIGHT_HIP])
             lateral_speed = abs(v[0]) / body_h
 
             if lateral_speed > self.FAST_FOOT_VELOCITY * 0.6:
@@ -383,7 +394,7 @@ class RuleBasedClassifier:
             (LM.LEFT_ANKLE, LM.LEFT_KNEE, "lead_teep"),
             (LM.RIGHT_ANKLE, LM.RIGHT_KNEE, "rear_teep"),
         ]:
-            v = _velocity(window, ankle_idx)
+            v = _velocity(window, ankle_idx, reference_indices=[LM.LEFT_HIP, LM.RIGHT_HIP])
             forward_speed = abs(v[0]) / body_h
 
             if forward_speed > self.FAST_FOOT_VELOCITY * 0.5:
