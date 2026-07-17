@@ -67,8 +67,9 @@ def get_styles() -> str:
         padding-top: 2rem !important;
     }
     /* Hide default Streamlit branding safely */
-    #MainMenu, footer {
+    #MainMenu, footer, .stDeployButton, .stAppDeployButton {
         visibility: hidden !important;
+        display: none !important;
     }
     
     /* Guarantee the sidebar expand button is ALWAYS visible */
