@@ -85,8 +85,8 @@ pytest
 - [x] Pose estimation pipeline
 - [x] Action classifier model
 - [x] Fighter tracking
-- [ ] Corner coach UI
-- [ ] Real-time video processing
+- [x] Corner coach UI
+- [x] Real-time video processing
 
 ## Disclaimer
 
