@@ -97,9 +97,7 @@ def get_styles() -> str:
         background-clip: text;
     }
 
-    p, li, span, div {
-        font-family: var(--font-main) !important;
-    }
+
 
     /* ───────────────────────────────────────────────────────────
        Glass Card
